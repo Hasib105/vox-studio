@@ -1,5 +1,6 @@
 // Build README preview GIFs: a ~1s slice from every scene of each demo MP4 (montage), small palette GIF.
 // Usage: node scripts/make-demo-gifs.js [demosDir=output/demos] [outDir=docs/media/demos]
+// Size knobs (env): GIF_W (portrait width, 200), GIF_WL (landscape width, 360), GIF_FPS (10), GIF_COLORS (64)
 'use strict';
 const fs = require('fs');
 const path = require('path');
@@ -14,10 +15,10 @@ for (const file of fs.readdirSync(demosDir).filter(f => f.endsWith('.mp4'))) {
   const story = JSON.parse(fs.readFileSync(storyFile, 'utf8'));
   const landscape = story.format === '16:9';
   let t = 0; const windows = [];
-  for (const sc of story.scenes) { const a = t + Math.min(1.4, sc.dur * 0.3); windows.push([a, a + 1.1]); t += sc.dur; }
+  for (const sc of story.scenes) { const a = t + Math.min(1.4, sc.dur * 0.3); windows.push([a, a + 0.9]); t += sc.dur; }
   const select = windows.map(([a, b]) => `between(t,${a.toFixed(2)},${b.toFixed(2)})`).join('+');
-  const w = landscape ? 420 : 240;
-  const vf = `select='${select}',setpts=N/(12*TB),fps=12,scale=${w}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=112:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`;
+  const w = landscape ? +(process.env.GIF_WL || 360) : +(process.env.GIF_W || 200), fps = +(process.env.GIF_FPS || 10), colors = +(process.env.GIF_COLORS || 64);
+  const vf = `select='${select}',setpts=N/(${fps}*TB),fps=${fps},scale=${w}:-1:flags=lanczos,split[a][b];[a]palettegen=max_colors=${colors}:stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=4:diff_mode=rectangle`;
   const out = path.join(outDir, name + '.gif');
   const r = spawnSync(FFMPEG, ['-y', '-loglevel', 'error', '-i', path.join(demosDir, file), '-vf', vf, '-an', out]);
   if (r.status !== 0) { console.error('failed', name, String(r.stderr)); continue; }
