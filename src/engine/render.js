@@ -7,7 +7,16 @@ const { spawn } = require('child_process');
 const { once } = require('events');
 const { Worker } = require('worker_threads');
 const { createCanvas } = require('@napi-rs/canvas');
-const FFMPEG = require('ffmpeg-static');
+// Bundled ffmpeg (ffmpeg-static) or, if its binary was not downloaded (install scripts blocked), ffmpeg on PATH.
+const FFMPEG = (() => {
+  if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
+  try { const p = require('ffmpeg-static'); if (p && fs.existsSync(p)) return p; } catch (e) { /* fall through */ }
+  return 'ffmpeg';
+})();
+function ffmpegMissing(e) {
+  if (e && e.code === 'ENOENT') throw new Error('ffmpeg not found. Run "npm rebuild ffmpeg-static" (or "npm install-scripts approve ffmpeg-static && npm rebuild"), install ffmpeg on your PATH, or set FFMPEG_PATH.');
+  throw e;
+}
 const { loadStory } = require('./loader');
 const { Renderer } = require('./scene');
 const { renderSfx } = require('./audio');
@@ -15,7 +24,7 @@ const { renderSfx } = require('./audio');
 function run(args, quiet = true) {
   return new Promise((res, rej) => {
     const p = spawn(FFMPEG, ['-y', '-loglevel', quiet ? 'error' : 'info', ...args], { stdio: ['ignore', 'ignore', 'pipe'] });
-    let err = ''; p.stderr.on('data', d => { err += d; });
+    let err = ''; p.stderr.on('data', d => { err += d; }); p.on('error', e => { try { ffmpegMissing(e); } catch (x) { rej(x); } });
     p.on('close', c => (c === 0 ? res() : rej(new Error('ffmpeg failed: ' + err.slice(-800)))));
   });
 }
@@ -26,7 +35,11 @@ async function encodeRange(storyInput, a, b, out, scale, onFrame, baseDir) {
   const R = new Renderer(story, { scale });
   const ff = spawn(FFMPEG, ['-y', '-loglevel', 'error', '-f', 'rawvideo', '-pix_fmt', 'rgba', '-s', `${R.cw}x${R.ch}`, '-r', String(story.fps), '-i', '-',
     '-c:v', 'libx264', '-preset', 'medium', '-crf', '19', '-pix_fmt', 'yuv420p', '-g', String(story.fps * 2), out], { stdio: ['pipe', 'ignore', 'inherit'] });
+  let spawnErr = null; ff.on('error', e => { spawnErr = e; });
+  ff.stdin.on('error', () => {});
+  await new Promise((res, rej) => { ff.once('spawn', res); ff.once('error', e => { try { ffmpegMissing(e); } catch (x) { rej(x); } }); });
   for (let f = a; f < b; f++) {
+    if (spawnErr) ffmpegMissing(spawnErr);
     R.renderFrame(f);
     const buf = Buffer.from(R.ctx.getImageData(0, 0, R.cw, R.ch).data.buffer);
     if (!ff.stdin.write(buf)) await once(ff.stdin, 'drain');

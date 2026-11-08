@@ -47,6 +47,10 @@ node src/cli.js new my-video                            # scaffold stories/my-vi
 
 Requires Node.js 20.19+ (Windows, macOS, Linux).
 
+> **ffmpeg not found?** Newer npm versions can block package install scripts, so `ffmpeg-static` never downloads
+> its binary. Fix with `npm install-scripts approve ffmpeg-static && npm rebuild ffmpeg-static`, or install
+> ffmpeg yourself, or set `FFMPEG_PATH=/path/to/ffmpeg`.
+
 ## Use it from Claude / any MCP client
 
 The MCP server lets an AI assistant make videos end to end: research → beat map → story JSON → preview images
