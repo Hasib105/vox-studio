@@ -1,0 +1,73 @@
+{
+  "title": "D.B. Cooper: the man who vanished",
+  "lang": "en", "format": "9:16", "theme": "noir",
+  "sources": ["https://www.fbi.gov/history/famous-cases/db-cooper-hijacking"],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5.5, "bg": "#3a3a3a",
+      "camera": { "move": "push_in", "amount": 0.07 },
+      "headline": { "text": "THE MAN WHO\nVANISHED", "style": "dark" },
+      "caption": "*Nov 24, 1971.* A man calling himself Dan Cooper boards a flight from Portland to Seattle.",
+      "elements": [
+        { "type": "newspaper", "x": 250, "y": 1180, "rot": -0.1, "w": 360, "h": 260 },
+        { "type": "newspaper", "x": 840, "y": 620, "rot": 0.12 },
+        { "type": "plane", "x": { "from": -200, "to": 700, "at": 0.2, "dur": 4.5, "ease": "linear" }, "y": 820, "scale": 1.6, "rot": -0.08, "jitter": 0.3 },
+        { "type": "label", "text": "FLIGHT 305", "size": 46, "font": "headline", "x": 760, "y": 1080, "rot": 0.05, "bg": "#d62828", "color": "#fff", "enter": { "anim": "pop", "at": 1.6 } }
+      ]
+    },
+    {
+      "id": "2-note", "dur": 5, "bg": "#2b2b2b",
+      "camera": { "move": "parallax", "amount": 30 },
+      "shakes": [{ "at": 1.6, "amp": 10 }],
+      "caption": "Mid-flight he hands a flight attendant a note: he has *a bomb*.",
+      "elements": [
+        { "type": "icon", "kind": "document", "x": 540, "y": 900, "scale": 2.6, "rot": -0.06, "enter": { "anim": "fly", "from": [-300, 500], "at": 0.2 } },
+        { "type": "stamp", "text": "BOMB", "size": 150, "x": 560, "y": 900, "rot": -0.18, "color": "#d62828", "enter": { "anim": "stamp", "at": 1.3, "dur": 0.3 } },
+        { "type": "label", "text": "\"I HAVE A BOMB\"", "size": 44, "font": "mono", "x": 540, "y": 1240, "rot": 0.03, "enter": { "anim": "pop", "at": 2.0 } }
+      ]
+    },
+    {
+      "id": "3-ransom", "dur": 5.5, "bg": "#3a3a3a", "transition": "tear",
+      "camera": { "move": "pan", "from": 60, "to": -60 },
+      "headline": { "text": "$200,000", "style": "red" },
+      "caption": "In Seattle he trades the passengers for *$200,000* and *four parachutes*.",
+      "elements": [
+        { "type": "bag", "x": 320, "y": 920, "scale": 1.3, "enter": { "anim": "drop", "at": 0.4, "shake": 10 } },
+        { "type": "parachute", "scale": 0.55, "loop": { "anim": "sway", "amp": 0.05 }, "each": [
+          { "x": 720, "y": 700, "enter": { "anim": "pop", "at": 1.0 } }, { "x": 900, "y": 760, "enter": { "anim": "pop", "at": 1.2 } },
+          { "x": 720, "y": 1030, "enter": { "anim": "pop", "at": 1.4 } }, { "x": 900, "y": 1090, "enter": { "anim": "pop", "at": 1.6 } }
+        ] },
+        { "type": "label", "text": "x4 PARACHUTES", "size": 40, "x": 800, "y": 1290, "rot": -0.04, "enter": { "anim": "pop", "at": 2.0 } }
+      ]
+    },
+    {
+      "id": "4-jump", "dur": 6, "bg": "#4a4a4a",
+      "camera": { "move": "tilt", "from": 30, "to": -30 },
+      "caption": "Flying south toward Reno, he *jumps* into the night, somewhere over southwest Washington.",
+      "elements": [
+        { "type": "map", "id": "m", "x": 540, "y": 900, "w": 900, "h": 900, "bounds": [[-125.5, 39.2], [-117.0, 48.6]], "card": { "color": "#2b2b2b", "pad": 30 }, "contextFill": "#d9d4c7",
+          "labels": [{ "text": "WASHINGTON", "geo": [-120.5, 47.6], "size": 40 }, { "text": "OREGON", "geo": [-120.5, 44.0], "size": 40 }] },
+        { "type": "path", "points": [{ "geo": [-122.33, 47.61] }, { "geo": [-122.6, 46.3] }, { "geo": [-122.5, 44.0] }, { "geo": [-119.81, 39.6] }], "curve": true, "color": "#efebe2", "width": 7, "dash": [14, 12], "enter": { "anim": "grow", "at": 0.5, "dur": 2.2 } },
+        { "type": "pin", "each": [{ "pos": { "geo": [-122.33, 47.61] }, "enter": { "anim": "drop", "at": 0.3 } }, { "pos": { "geo": [-119.81, 39.6] }, "enter": { "anim": "drop", "at": 2.5 } }] },
+        { "type": "label", "size": 32, "each": [
+          { "text": "SEATTLE", "pos": { "geo": [-122.33, 47.61], "dx": -110, "dy": -20 }, "enter": { "anim": "pop", "at": 0.5 } },
+          { "text": "RENO", "pos": { "geo": [-119.81, 39.6], "dx": 80, "dy": -30 }, "enter": { "anim": "pop", "at": 2.7 } }
+        ] },
+        { "type": "parachute", "pos": { "geo": [-122.6, 45.9] }, "scale": 0.35, "y": { "from": 0, "to": 0, "at": 0 }, "enter": { "anim": "drop", "at": 1.7, "dur": 1.2 }, "loop": { "anim": "sway", "amp": 0.08 } },
+        { "type": "question", "pos": { "geo": [-122.6, 45.9], "dx": 110 }, "size": 70, "enter": { "anim": "pop", "at": 3.0 } }
+      ]
+    },
+    {
+      "id": "5-unsolved", "dur": 5.5, "bg": "#2b2b2b", "transition": "flash",
+      "camera": "static",
+      "headline": { "text": "STILL\nUNSOLVED", "style": "dark" },
+      "caption": "In 1980, *$5,800* of the ransom washed up by the Columbia River. Cooper was *never identified*.",
+      "elements": [
+        { "type": "icon", "kind": "cash", "x": 360, "y": 860, "scale": 1.5, "rot": -0.1, "enter": { "anim": "pop", "at": 0.3 } },
+        { "type": "label", "text": "$5,800 FOUND", "size": 46, "font": "headline", "x": 360, "y": 1050, "rot": -0.03, "enter": { "anim": "pop", "at": 0.8 } },
+        { "type": "question", "round": true, "size": 150, "x": 780, "y": 900, "enter": { "anim": "pop", "at": 1.2 }, "loop": { "anim": "pulse", "amp": 0.04 } },
+        { "type": "label", "text": "SOURCE: FBI", "font": "mono", "size": 26, "bg": "#141414", "color": "#efebe2", "x": 540, "y": 1645, "jitter": 0 }
+      ]
+    }
+  ]
+}

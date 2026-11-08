@@ -5,6 +5,8 @@ const { resolve, ease, prog, lerp, clamp, shake, twos, hash, mulberry, isGeo, is
 const { jit, makeGrain, makeVignette } = require('./paper');
 const { banner, caption } = require('./text');
 const { registry } = require('../components');
+const { setStyle } = require('./style');
+const { background, accents, decor } = require('./backdrop');
 
 const ANIM_DUR = { pop: 0.45, fade: 0.4, slide: 0.6, drop: 0.55, rise: 0.55, stamp: 0.3, fly: 0.6, grow: 0.6, unfold: 0.4, spin: 0.6, none: 0 };
 const ANIM_EASE = { slide: 'out', drop: 'back', rise: 'back', fade: 'linear', fly: 'out', grow: 'inOut', spin: 'out' };
@@ -101,7 +103,7 @@ class Renderer {
 
   makeState(i, sec) {
     const st = this.story, sc = st.scenes[i];
-    const S = { sec, t: sec / sc.dur, dur: sc.dur, fps: st.fps, W: this.W, H: this.H, scene: sc, story: st, theme: st._theme, fonts: st._fonts, lang: st.lang, cam: cameraAt(sc, sec), maps: {}, images: st._images || {}, key: 's' + (sc.id ?? i), enterP: 1 };
+    const S = { sceneIndex: i, sec, t: sec / sc.dur, dur: sc.dur, fps: st.fps, W: this.W, H: this.H, scene: sc, story: st, theme: st._theme, fonts: st._fonts, lang: st.lang, cam: cameraAt(sc, sec), maps: {}, images: st._images || {}, key: 's' + (sc.id ?? i), enterP: 1 };
     S.pt = v => this.pt(v, S);
     S.drawChildren = (ctx, els, SS) => this.drawElements(ctx, els, SS, SS.key);
     return S;
@@ -121,12 +123,15 @@ class Renderer {
   renderScene(ctx, i, sec) {
     const sc = this.story.scenes[i], s = this.scale, { W, H } = this;
     ctx.setTransform(s, 0, 0, s, 0, 0); ctx.globalAlpha = 1; ctx.globalCompositeOperation = 'source-over';
-    ctx.fillStyle = sc.bg || '#c1121f'; ctx.fillRect(0, 0, W, H);
+    setStyle(this.story._theme);
     const S = this.makeState(i, sec);
+    background(ctx, S);
     this.prepare(sc.elements, S);
     const cam = S.cam;
     ctx.save();
     ctx.translate(W / 2 + cam.tx, H / 2 + cam.ty); ctx.rotate(cam.rot); ctx.scale(cam.s, cam.s); ctx.translate(-W / 2, -H / 2);
+    accents(ctx, S);
+    decor(ctx, S);
     this.drawElements(ctx, sc.elements || [], S, S.key);
     if (sc.headline) banner(ctx, S, sc.headline, sec);
     ctx.restore();

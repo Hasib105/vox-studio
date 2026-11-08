@@ -2,6 +2,7 @@
 'use strict';
 const { createCanvas } = require('@napi-rs/canvas');
 const { mulberry, hash, clamp } = require('./core');
+const { paperStyle, styleId } = require('./style');
 
 const rectPts = (w, h, dx = 0, dy = 0) => [[-w / 2 + dx, -h / 2 + dy], [w / 2 + dx, -h / 2 + dy], [w / 2 + dx, h / 2 + dy], [-w / 2 + dx, h / 2 + dy]];
 const circlePts = (r, n = 30, dx = 0, dy = 0, ry = r) => Array.from({ length: n }, (_, i) => [dx + Math.cos(i / n * Math.PI * 2) * r, dy + Math.sin(i / n * Math.PI * 2) * ry]);
@@ -35,7 +36,7 @@ function pathRings(ctx, rings) { ctx.beginPath(); for (const p of rings) { ctx.m
 // halftone dot tile with a diagonal size gradient (the Vox print look)
 const htCache = {};
 function htTile(color, sp = 16) {
-  const k = color + '|' + sp; if (htCache[k]) return htCache[k];
+  const k = color + '|' + sp + '|' + styleId(); if (htCache[k]) return htCache[k];
   const S = 1400, c = createCanvas(S, S), x = c.getContext('2d'); x.fillStyle = color;
   for (let j = 0; j <= S / sp; j++) for (let i = 0; i <= S / sp + 1; i++) {
     const px = i * sp + (j % 2) * sp / 2, py = j * sp, g = clamp((px + py) / (S * 1.3));
@@ -46,23 +47,50 @@ function htTile(color, sp = 16) {
 
 function shadowOn(ctx, o) {
   if (o.shadow === 0) return;
-  const s = o.shadow ?? 1;
-  ctx.shadowColor = `rgba(0,0,0,${o.shadowA ?? 0.38})`; ctx.shadowBlur = o.blur ?? 14;
+  const s = o.shadow ?? 1, P = paperStyle();
+  if (P.shadow === 'none') return;
+  if (P.shadow === 'hard') { ctx.shadowColor = P.shadowColor || 'rgba(0,0,0,0.85)'; ctx.shadowBlur = 0; ctx.shadowOffsetX = 6 * s; ctx.shadowOffsetY = 7 * s; return; }
+  if (P.shadow === 'deep') { ctx.shadowColor = `rgba(40,25,10,${0.32 * (P.shadowA || 1)})`; ctx.shadowBlur = 26; ctx.shadowOffsetX = 3 * s; ctx.shadowOffsetY = 14 * s; return; }
+  ctx.shadowColor = `rgba(0,0,0,${(o.shadowA ?? 0.38) * (P.shadowA || 1)})`; ctx.shadowBlur = o.blur ?? 14;
   ctx.shadowOffsetX = 5 * s; ctx.shadowOffsetY = 8 * s;
 }
+// second, tight contact shadow for the dimensional papercraft look
+function contactShadow(ctx, poly, o) {
+  if (o.shadow === 0 || paperStyle().shadow !== 'deep') return;
+  ctx.save(); ctx.shadowColor = 'rgba(30,20,10,0.38)'; ctx.shadowBlur = 4; ctx.shadowOffsetX = 1.5; ctx.shadowOffsetY = 3;
+  ctx.fillStyle = '#000'; pathPoly(ctx, poly); ctx.fill(); ctx.restore();
+}
 
-// A paper piece: soft drop shadow, cream torn fringe, colored face, optional halftone.
+// A paper piece: drop shadow, torn fringe, colored face, optional halftone. Treatment follows the active theme.
 function paper(ctx, pts, key, fill, o = {}) {
-  const amp = o.amp ?? 4, step = o.step ?? 12;
+  const P = paperStyle();
+  const amp = (o.amp ?? 4) * P.ampMul, step = o.step ?? 12;
   const main = torn(pts, key, amp, step);
-  const fringe = o.fringe !== false;
-  const under = fringe ? torn(offsetPoly(pts, o.fringeW ?? 5), key + 'f', amp + 1.5, step) : main;
+  const fringe = o.fringe !== false && P.fringe;
+  const under = fringe ? torn(offsetPoly(pts, (o.fringeW ?? 5) * P.fringeW), key + 'f', amp + 1.5 * P.ampMul, step) : main;
+  contactShadow(ctx, under, o);
   ctx.save(); shadowOn(ctx, o);
-  ctx.fillStyle = fringe ? (o.fringeColor || '#f6f0e1') : fill; pathPoly(ctx, under); ctx.fill();
+  ctx.fillStyle = fringe ? (o.fringeColor || P.fringeColor) : fill; pathPoly(ctx, under); ctx.fill();
   ctx.restore();
   if (fringe) { ctx.fillStyle = fill; pathPoly(ctx, main); ctx.fill(); }
-  if (o.ht) halftoneIn(ctx, main, o.ht, o.htA ?? 0.35, o.htSp ?? 16);
+  if (o.ht && P.htMul > 0) halftoneIn(ctx, main, o.ht, (o.htA ?? 0.35) * P.htMul, o.htSp ?? 16);
+  finish(ctx, main, fill, key);
   return main;
+}
+// theme finishing passes: riso misregistration, blueprint outline, papercraft bevel
+function finish(ctx, poly, fill, key) {
+  const P = paperStyle();
+  if (P.misreg) {
+    ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha *= P.misreg.alpha ?? 0.4;
+    ctx.translate(P.misreg.dx ?? 5, P.misreg.dy ?? -4); ctx.fillStyle = P.misreg.color || fill; pathPoly(ctx, poly); ctx.fill(); ctx.restore();
+  }
+  if (P.outline) { ctx.save(); ctx.strokeStyle = P.outline.color; ctx.lineWidth = P.outline.width || 2.5; ctx.lineJoin = 'round'; pathPoly(ctx, poly); ctx.stroke(); ctx.restore(); }
+  if (P.bevel) {
+    ctx.save(); pathPoly(ctx, poly); ctx.clip(); ctx.lineWidth = 5;
+    ctx.translate(2, 2); ctx.strokeStyle = 'rgba(255,255,255,0.35)'; pathPoly(ctx, poly); ctx.stroke();
+    ctx.translate(-4, -4); ctx.strokeStyle = 'rgba(60,40,20,0.16)'; pathPoly(ctx, poly); ctx.stroke();
+    ctx.restore();
+  }
 }
 function halftoneIn(ctx, poly, color, alpha = 0.35, sp = 16, rings = false) {
   const b = rings ? bbox(poly.flat()) : bbox(poly);
@@ -74,13 +102,17 @@ function halftoneIn(ctx, poly, color, alpha = 0.35, sp = 16, rings = false) {
 // Arbitrary (possibly concave, multi-ring) shapes such as countries: stroke-fringe instead of offset.
 function paperRings(ctx, rings, fill, o = {}) {
   if (!rings.length) return;
+  const P = paperStyle(), fringe = P.fringe;
+  const fc = o.fringeColor || P.fringeColor, fw = (o.fringeW ?? 5) * 2 * (fringe ? P.fringeW : 0.3);
   ctx.save(); shadowOn(ctx, o);
-  ctx.lineJoin = 'round'; ctx.lineWidth = (o.fringeW ?? 5) * 2; ctx.strokeStyle = o.fringeColor || '#f6f0e1';
+  ctx.lineJoin = 'round'; ctx.lineWidth = fw; ctx.strokeStyle = fringe ? fc : fill;
   pathRings(ctx, rings); ctx.stroke();
   ctx.restore();
-  ctx.save(); ctx.lineJoin = 'round'; ctx.lineWidth = (o.fringeW ?? 5) * 2; ctx.strokeStyle = o.fringeColor || '#f6f0e1'; pathRings(ctx, rings); ctx.stroke(); ctx.restore();
+  if (fringe) { ctx.save(); ctx.lineJoin = 'round'; ctx.lineWidth = fw; ctx.strokeStyle = fc; pathRings(ctx, rings); ctx.stroke(); ctx.restore(); }
   ctx.fillStyle = fill; pathRings(ctx, rings); ctx.fill('evenodd');
-  if (o.ht) halftoneIn(ctx, rings, o.ht, o.htA ?? 0.35, o.htSp ?? 16, true);
+  if (o.ht && P.htMul > 0) halftoneIn(ctx, rings, o.ht, (o.htA ?? 0.35) * P.htMul, o.htSp ?? 16, true);
+  if (P.outline) { ctx.save(); ctx.strokeStyle = P.outline.color; ctx.lineWidth = P.outline.width || 2.5; ctx.lineJoin = 'round'; pathRings(ctx, rings); ctx.stroke(); ctx.restore(); }
+  if (P.misreg) { ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.globalAlpha *= P.misreg.alpha ?? 0.4; ctx.translate(P.misreg.dx ?? 5, P.misreg.dy ?? -4); ctx.fillStyle = P.misreg.color || fill; pathRings(ctx, rings); ctx.fill('evenodd'); ctx.restore(); }
 }
 
 function jit(ctx, key, sec, a = 1, fps = 30) {

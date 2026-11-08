@@ -8,7 +8,9 @@ coordinate below is in those pixels, origin top-left. Scenes play back to back.
   "title": "My explainer",
   "lang": "en",                 // en | bn | hi | ... (picks fonts, native digits, caption pacing)
   "format": "9:16",             // 9:16 | 16:9 | 1:1 | 4:5
-  "theme": "vox-news",          // vox-news | swiss | zine
+  "theme": "vox-news",          // vox-news | scrapbook | protest | papercraft | noir | riso | blueprint | retro70s | swiss
+  "quality": "high",            // draft | standard | high (default) | max
+  "resolution": "1080p",        // 720p | 1080p | 1440p | 4k (relative to the format)
   "fps": 30,
   "audio": { "sfx": false, "music": "music/bed.mp3", "musicVolume": 0.35 },
   "sources": ["https://..."],   // for your records; also put a source label on screen
@@ -110,6 +112,39 @@ Each `[t, value, ease]` — the ease applies on the way **into** that key. Eases
   points: `"from": {"geo": [41.6, 40.6]}`. Use `"map": "<id>"` inside the geo object if a scene has two maps.
 - Country names follow Natural Earth (`vox countries`): "United States of America", "Turkey", "Iran", ...
 
+## Styles (themes)
+
+A theme restyles the **whole** story: fonts, a color remap applied to every component, paper treatment (torn vs
+clean-cut edges, soft/hard/deep shadows, riso misregistration, blueprint outlines), background, headline and
+caption treatment, and auto-placed decorations. The same story renders in any theme with `--theme <name>`.
+
+| theme | look | headline | caption |
+|---|---|---|---|
+| `vox-news` | bold flat color per scene, torn chips | torn chip | torn strip, yellow marker |
+| `scrapbook` | cream grid paper, scene-colored circle + torn strip, triangles/zigzags/tape | taped label | taped strip |
+| `protest` | blue duotone newsprint, red/yellow accents, hand-lettered labels | taped label | red invert highlight |
+| `papercraft` | cream fiber paper, clean-cut layered paper, deep shadows, muted colors | display serif, no chip | underline |
+| `noir` | B&W newsprint, heavy grain, single red accent | torn chip, Bebas | typewriter, invert |
+| `riso` | off-white paper, pink/blue/yellow inks, off-register overprint, blob accents | riso overprint | pink marker |
+| `blueprint` | blue grid, white outlines, monospace, FIG. labels | outlined box | outlined box |
+| `retro70s` | rotating sunburst, 70s palette, hard offset shadows | rounded pill, Shrikhand | pill |
+| `swiss` | crisp cut paper, flat color, red accents, minimal texture | red block | red invert |
+
+Notes:
+- In paper-base themes (scrapbook, papercraft, riso, blueprint) the scene `bg` becomes an accent (circle, blob)
+  and maps without a `card` automatically get a water card in the scene color.
+- Colors can be palette tokens: `"color": "$accent"`, `"$accent2"`, `"$red"`, `"$ink"`, `"$paper"`, `"$pink"`.
+- Per-scene: `"accent": "none" | "circle" | "strip" | "both" | "blob"`, `"decor": false`.
+- `themeOverrides` deep-merges into the theme (fonts, caption, headline, paperStyle, background...).
+
+## Quality and formats
+
+- `format`: `9:16` (1080x1920), `16:9` (1920x1080), `1:1`, `4:5`. Coordinates are in that canvas.
+  Captions and headlines size and place themselves for the format (captions sit lower on 16:9).
+- `quality` / `--quality`: `draft` (half size, fast), `standard`, `high` (default: every frame drawn at 1.5x
+  and Lanczos-downscaled, x264 CRF 16 tuned for animation), `max` (2x supersampling, CRF 13).
+- `resolution` / `--resolution`: `1440p` or `4k` scale the output (a 16:9 story at `4k` = 3840x2160).
+
 ## Languages
 
 Set `"lang"`. Bangla (`bn`) uses Hind Siliguri with correct conjuncts and native digits in `counter`.
@@ -130,5 +165,12 @@ vox check  story.json            # validate + timeline
 vox stills story.json            # contact sheet PNG (review the look in seconds)
 vox stills story.json --scene 3 --times 0.1,0.4,0.8   # one scene's animation
 vox frame  story.json 12.5       # one full-res frame
-vox render story.json [--sfx] [--scale 0.5] [-o out.mp4]
+vox render story.json [--theme T] [--quality high] [--resolution 4k] [--sfx] [-o out.mp4]
+vox gallery story.json --scenes 1,3        # the same shots in all 9 themes, side by side
 ```
+
+## Example stories (one per theme)
+
+`stories/` has a complete, reviewed story for every theme: `iron-gate.*` (vox-news, EN/BN/16:9),
+`coffee.scrapbook`, `four-day-week.protest`, `bread.papercraft`, `db-cooper.noir`, `rubiks-cube.riso`,
+`padma-bridge.blueprint.bn` (Bangla), `apollo-11.retro70s`, `seasons.swiss.landscape` (16:9).

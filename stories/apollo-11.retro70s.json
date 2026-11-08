@@ -1,0 +1,71 @@
+{
+  "title": "Apollo 11: eight days that changed everything",
+  "lang": "en", "format": "9:16", "theme": "retro70s",
+  "sources": ["https://www.nasa.gov/mission/apollo-11/"],
+  "scenes": [
+    {
+      "id": "1-launch", "dur": 5.5, "bg": "#e76f51",
+      "camera": { "move": "tilt", "from": -40, "to": 40 },
+      "headline": { "text": "ONE SMALL\nSTEP", "style": "dark" },
+      "caption": "*July 16, 1969.* Apollo 11 launches from Florida on a Saturn V rocket.",
+      "elements": [
+        { "type": "rocket", "x": 540, "y": { "kf": [[0, 1300], [1.2, 1300], [5.5, 820, "in"]] }, "scale": 1.3, "thrust": { "from": 0.2, "to": 1, "at": 0.8, "dur": 1 }, "loop": { "anim": "shiver", "amp": 3 } },
+        { "type": "paper", "shape": "circle", "depth": 0.5, "loop": { "anim": "drift", "amp": 10 }, "each": [
+          { "x": 300, "y": 1500, "r": 120, "color": "#f3e3c3", "enter": { "anim": "pop", "at": 1.0 } }, { "x": 760, "y": 1520, "r": 140, "color": "#f3e3c3", "enter": { "anim": "pop", "at": 1.1 } },
+          { "x": 530, "y": 1560, "r": 110, "color": "#e9c46a", "enter": { "anim": "pop", "at": 1.2 } }
+        ] }
+      ]
+    },
+    {
+      "id": "2-trip", "dur": 5.5, "bg": "#264653", "transition": "zoom",
+      "camera": { "move": "pan", "from": 60, "to": -60 },
+      "caption": "Three days and *about 384,000 km* later, they reach the Moon.",
+      "elements": [
+        { "type": "planet", "kind": "earth", "x": 210, "y": 1100, "r": 170, "enter": "pop" },
+        { "type": "planet", "kind": "moon", "x": 850, "y": 620, "r": 120, "enter": { "anim": "pop", "at": 0.3 } },
+        { "type": "path", "points": [[300, 980], [520, 720], [760, 650]], "curve": true, "color": "#f3e3c3", "width": 8, "dash": [16, 14], "enter": { "anim": "grow", "at": 0.6, "dur": 2 }, "arrowHead": true },
+        { "type": "label", "text": "~384,000 KM", "size": 52, "font": "headline", "x": 560, "y": 920, "rot": -0.06, "enter": { "anim": "pop", "at": 1.8 } },
+        { "type": "label", "text": "3 DAYS", "size": 42, "x": 720, "y": 1050, "rot": 0.05, "enter": { "anim": "pop", "at": 2.2 } }
+      ]
+    },
+    {
+      "id": "3-landing", "dur": 5.5, "bg": "#2a9d8f",
+      "camera": { "move": "push_in", "amount": 0.07 },
+      "shakes": [{ "at": 1.5, "amp": 10 }],
+      "headline": { "text": "JULY 20", "style": "dark" },
+      "caption": "Armstrong and Aldrin land in the *Sea of Tranquility*. Collins circles above in orbit.",
+      "elements": [
+        { "type": "planet", "kind": "moon", "x": 540, "y": 1500, "r": 640, "jitter": 0.3 },
+        { "type": "group", "x": 540, "y": 860, "enter": { "anim": "drop", "at": 0.4, "dur": 1.1, "shake": 10 }, "elements": [
+          { "type": "paper", "shape": "poly", "points": [[-110, 0], [110, 0], [80, -150], [-80, -150]], "color": "#e9c46a", "ht": "#7b4b36", "htA": 0.3 },
+          { "type": "paper", "shape": "poly", "points": [[-60, -150], [60, -150], [40, -230], [-40, -230]], "color": "#f3e3c3" },
+          { "type": "paper", "shape": "poly", "points": [[-110, 0], [-160, 90], [-140, 90], [-90, 0]], "color": "#264653" },
+          { "type": "paper", "shape": "poly", "points": [[110, 0], [160, 90], [140, 90], [90, 0]], "color": "#264653" }
+        ] },
+        { "type": "label", "text": "SEA OF TRANQUILITY", "size": 40, "x": 540, "y": 1110, "rot": -0.03, "enter": { "anim": "pop", "at": 1.6 } }
+      ]
+    },
+    {
+      "id": "4-surface", "dur": 5.5, "bg": "#f4a261", "transition": "zoom",
+      "camera": { "move": "parallax", "amount": 30 },
+      "caption": "They spend *about 21 hours* on the surface and bring back *21.5 kg* of Moon rock.",
+      "elements": [
+        { "type": "clock", "x": 330, "y": 820, "r": 180, "time": { "from": 0, "to": 21.5, "at": 0.4, "dur": 3, "ease": "inOut" }, "enter": "pop" },
+        { "type": "label", "text": "~21 HOURS", "size": 46, "font": "headline", "x": 330, "y": 1070, "enter": { "anim": "pop", "at": 1.0 } },
+        { "type": "paper", "shape": "poly", "x": 790, "y": 860, "points": [[-120, 40], [-90, -60], [0, -100], [110, -50], [130, 50], [40, 90], [-70, 80]], "color": "#8d8a80", "ht": "#1b1b1e", "htA": 0.3, "enter": { "anim": "pop", "at": 0.8 } },
+        { "type": "label", "text": "21.5 KG ROCK", "size": 46, "font": "headline", "x": 790, "y": 1070, "rot": 0.04, "enter": { "anim": "pop", "at": 1.4 } }
+      ]
+    },
+    {
+      "id": "5-home", "dur": 5.5, "bg": "#264653",
+      "camera": "static",
+      "headline": { "text": "8 DAYS.\n3 MEN.", "style": "dark" },
+      "caption": "On *July 24* they splash down in the Pacific. *Hundreds of millions* had watched.",
+      "elements": [
+        { "type": "planet", "kind": "earth", "x": 540, "y": 960, "r": 300, "enter": "pop", "loop": { "anim": "pulse", "amp": 0.01 } },
+        { "type": "parachute", "x": 540, "y": { "from": 420, "to": 640, "at": 0.4, "dur": 4.5, "ease": "out" }, "scale": 0.6, "stripe": "#e76f51", "loop": { "anim": "sway", "amp": 0.06 }, "enter": { "anim": "pop", "at": 0.4 } },
+        { "type": "label", "text": "SOURCE: NASA", "font": "mono", "size": 26, "bg": "#1b1b1e", "color": "#f3e3c3", "x": 540, "y": 1645, "jitter": 0 }
+      ]
+    }
+  ]
+}

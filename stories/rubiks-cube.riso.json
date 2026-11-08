@@ -1,0 +1,62 @@
+{
+  "title": "The Rubik's Cube in 30 seconds",
+  "lang": "en", "format": "9:16", "theme": "riso",
+  "sources": ["https://www.rubiks.com/en-us/about", "https://www.cube20.org/"],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5, "bg": "#0078bf",
+      "camera": { "move": "push_in", "amount": 0.07 },
+      "headline": { "text": "43\nQUINTILLION", "style": "dark" },
+      "caption": "A Rubik's Cube can be scrambled about *43 quintillion* different ways.",
+      "elements": [
+        { "type": "cube", "x": 540, "y": 960, "size": 360, "solve": 0, "enter": { "anim": "spin", "turns": -1, "dur": 0.8 }, "loop": { "anim": "sway", "amp": 0.06 } },
+        { "type": "label", "text": "43,252,003,274,489,856,000", "font": "mono", "size": 30, "x": 540, "y": 1250, "rot": -0.03, "enter": { "anim": "slide", "from": "right", "at": 1.0 } }
+      ]
+    },
+    {
+      "id": "2-origin", "dur": 5.5, "bg": "#ff48b0", "transition": "whip",
+      "camera": { "move": "tilt", "from": 30, "to": -30 },
+      "caption": "*Ernő Rubik*, a Hungarian design professor, made the first one in *1974*.",
+      "elements": [
+        { "type": "map", "id": "m", "x": 540, "y": 860, "w": 820, "h": 560, "focus": ["Hungary"], "labels": [{ "text": "HUNGARY", "geo": [19.3, 46.9], "size": 70 }], "enter": "pop" },
+        { "type": "pin", "pos": { "geo": [19.04, 47.5] }, "enter": { "anim": "drop", "at": 0.8, "shake": 8 } },
+        { "type": "label", "text": "BUDAPEST", "size": 38, "pos": { "geo": [19.04, 47.5], "dx": 0, "dy": -80 }, "enter": { "anim": "pop", "at": 1.1 } },
+        { "type": "counter", "x": 540, "y": 1230, "size": 130, "value": { "from": 1900, "to": 1974, "at": 0.6, "dur": 1.6, "ease": "out" }, "pad": 4, "native": false, "enter": { "anim": "pop", "at": 0.5 } }
+      ]
+    },
+    {
+      "id": "3-global", "dur": 5, "bg": "#ffd400",
+      "camera": { "move": "parallax", "amount": 35 },
+      "headline": { "text": "1980:\nWORLDWIDE", "style": "dark" },
+      "caption": "It launched worldwide in *1980* and became one of the *best-selling toys* ever.",
+      "elements": [
+        { "type": "cube", "size": 170, "depth": 0.6, "loop": { "anim": "bob", "amp": 10 }, "each": [
+          { "x": 230, "y": 760, "seed": 1, "enter": { "anim": "pop", "at": 0.3 } }, { "x": 540, "y": 700, "seed": 2, "enter": { "anim": "pop", "at": 0.45 } },
+          { "x": 850, "y": 780, "seed": 3, "enter": { "anim": "pop", "at": 0.6 } }, { "x": 380, "y": 1060, "seed": 4, "enter": { "anim": "pop", "at": 0.75 } },
+          { "x": 700, "y": 1080, "seed": 5, "enter": { "anim": "pop", "at": 0.9 } }
+        ] }
+      ]
+    },
+    {
+      "id": "4-gods", "dur": 5.5, "bg": "#00a95c", "transition": "whip",
+      "camera": "static",
+      "shakes": [{ "at": 2.0, "amp": 10 }],
+      "headline": { "text": "GOD'S\nNUMBER", "style": "dark" },
+      "caption": "In 2010 computers proved any scramble can be solved in *20 moves or fewer*.",
+      "elements": [
+        { "type": "counter", "x": 540, "y": 880, "size": 300, "value": { "from": 0, "to": 20, "at": 0.3, "dur": 1.6, "ease": "out" }, "pad": 2, "enter": "pop" },
+        { "type": "label", "text": "MOVES. ALWAYS.", "size": 54, "x": 540, "y": 1150, "rot": 0.03, "enter": { "anim": "stamp", "at": 1.9 } }
+      ]
+    },
+    {
+      "id": "5-solve", "dur": 5, "bg": "#0078bf",
+      "camera": { "move": "push_in", "amount": 0.06 },
+      "caption": "Twenty moves from chaos to solved. *Your turn.*",
+      "elements": [
+        { "type": "cube", "x": 540, "y": 920, "size": 380, "solve": { "from": 0, "to": 1, "at": 0.4, "dur": 2.8, "ease": "linear" }, "loop": { "anim": "sway", "amp": 0.05 }, "enter": "pop" },
+        { "type": "check", "x": 860, "y": 640, "size": 160, "color": "#00a95c", "enter": { "anim": "pop", "at": 3.4 } },
+        { "type": "label", "text": "SOURCE: RUBIK'S, CUBE20.ORG", "font": "mono", "size": 24, "bg": "#2b2a4c", "color": "#fbf8f1", "x": 540, "y": 1645, "jitter": 0 }
+      ]
+    }
+  ]
+}

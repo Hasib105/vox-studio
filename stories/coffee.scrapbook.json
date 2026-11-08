@@ -1,0 +1,73 @@
+{
+  "title": "Why coffee wakes you up",
+  "lang": "en", "format": "9:16", "theme": "scrapbook",
+  "sources": ["https://www.fda.gov/consumers/consumer-updates/spilling-beans-how-much-caffeine-too-much", "https://www.ncbi.nlm.nih.gov/books/NBK223808/"],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5, "bg": "#e9b949",
+      "camera": { "move": "push_in", "amount": 0.07 },
+      "headline": { "text": "WAKE UP\nBETTER?", "style": "light" },
+      "caption": "Coffee doesn't give you energy. It *hides* how tired you are.",
+      "elements": [
+        { "type": "cup", "x": 540, "y": 960, "scale": 1.5, "label": "COFFEE", "enter": { "anim": "rise", "dist": 900, "at": 0.2 } },
+        { "type": "label", "text": "NOT ENERGY", "size": 44, "x": 820, "y": 1210, "rot": 0.08, "bg": "#e07a8b", "color": "#fff", "enter": { "anim": "pop", "at": 1.2 } },
+        { "type": "question", "x": 250, "y": 640, "rot": -0.2, "enter": { "anim": "pop", "at": 1.5 }, "loop": "sway" }
+      ]
+    },
+    {
+      "id": "2-adenosine", "dur": 5.5, "bg": "#4f9d8e", "transition": "tear",
+      "camera": { "move": "parallax", "amount": 30 },
+      "caption": "All day your brain builds up *adenosine*, a chemical that makes you sleepy.",
+      "elements": [
+        { "type": "molecule", "x": 540, "y": 880, "scale": 1.3, "label": "ADENOSINE", "spin": 0.15, "enter": "pop",
+          "atoms": [[0, 0, 50, "#1d3557"], [-120, -70, 36, "#457b9d"], [120, -70, 36, "#457b9d"], [-90, 110, 36, "#e9b949"], [90, 110, 36, "#e9b949"], [0, -170, 30, "#e07a8b"]],
+          "bonds": [[0, 1], [0, 2], [0, 3], [0, 4], [1, 5], [2, 5]] },
+        { "type": "molecule", "scale": 0.5, "depth": 0.5, "loop": { "anim": "drift", "amp": 14 }, "each": [
+          { "x": 200, "y": 560, "enter": { "anim": "pop", "at": 1.0 } }, { "x": 880, "y": 620, "enter": { "anim": "pop", "at": 1.4 } },
+          { "x": 210, "y": 1200, "enter": { "anim": "pop", "at": 1.8 } }, { "x": 870, "y": 1180, "enter": { "anim": "pop", "at": 2.2 } }
+        ] },
+        { "type": "label", "text": "SLEEP PRESSURE", "size": 40, "x": 540, "y": 470, "rot": -0.04, "enter": { "anim": "slide", "from": "left", "at": 0.6 } }
+      ]
+    },
+    {
+      "id": "3-block", "dur": 5.5, "bg": "#e07a8b",
+      "camera": { "move": "push_in", "amount": 0.06 },
+      "shakes": [{ "at": 2.1, "amp": 12 }],
+      "headline": { "text": "THE\nBLOCKER", "style": "light" },
+      "caption": "Caffeine looks similar, so it *plugs the same receptors* and blocks the sleepy signal.",
+      "elements": [
+        { "type": "paper", "shape": "rect", "w": 520, "h": 120, "x": 540, "y": 1120, "color": "#1d3557", "ht": "#000000", "htA": 0.2 },
+        { "type": "label", "text": "RECEPTOR", "size": 36, "bg": "none", "color": "#f1faee", "x": 540, "y": 1120 },
+        { "type": "molecule", "x": 540, "y": 860, "scale": 1.1, "label": "CAFFEINE",
+          "atoms": [[0, 0, 50, "#6f4518"], [-120, -60, 36, "#e9b949"], [120, -60, 36, "#e9b949"], [0, 130, 36, "#f1faee"]], "bonds": [[0, 1], [0, 2], [0, 3]],
+          "enter": { "anim": "drop", "at": 1.4, "dur": 0.6, "shake": 12 } },
+        { "type": "xmark", "x": 860, "y": 700, "enter": { "anim": "pop", "at": 2.4 } },
+        { "type": "label", "text": "ADENOSINE", "size": 34, "x": 860, "y": 600, "rot": 0.06, "enter": { "anim": "pop", "at": 2.2 } }
+      ]
+    },
+    {
+      "id": "4-halflife", "dur": 5.5, "bg": "#9ad1c4", "transition": "whip",
+      "camera": { "move": "tilt", "from": 30, "to": -30 },
+      "caption": "Your body clears about *half the caffeine in ~5 hours*, so a 4 pm cup is still working at bedtime.",
+      "elements": [
+        { "type": "clock", "x": 540, "y": 860, "r": 230, "time": { "from": 16, "to": 21, "at": 0.5, "dur": 3.5, "ease": "inOut" }, "enter": "pop" },
+        { "type": "label", "text": "HALF-LIFE ~5 HRS", "size": 50, "font": "headline", "x": 540, "y": 1180, "rot": -0.03, "enter": { "anim": "slide", "from": "right", "at": 0.8 } },
+        { "type": "cup", "x": 210, "y": 540, "scale": 0.55, "rot": -0.15, "enter": { "anim": "pop", "at": 0.3 } },
+        { "type": "label", "text": "4 PM", "size": 40, "x": 230, "y": 680, "enter": { "anim": "pop", "at": 0.5 } },
+        { "type": "label", "text": "9 PM: STILL ~HALF", "size": 34, "x": 790, "y": 560, "rot": 0.05, "bg": "#1d3557", "color": "#fff", "enter": { "anim": "pop", "at": 3.6 } }
+      ]
+    },
+    {
+      "id": "5-limit", "dur": 5, "bg": "#e9b949",
+      "camera": "static",
+      "caption": "The FDA says up to *400 mg a day* is fine for most healthy adults. That's about *four cups*.",
+      "elements": [
+        { "type": "counter", "x": 540, "y": 820, "value": { "from": 0, "to": 400, "at": 0.2, "dur": 1.8, "ease": "out" }, "pad": 3, "suffix": "mg", "suffixAt": 2.1, "size": 220, "enter": "pop" },
+        { "type": "cup", "y": 1170, "scale": 0.42, "steam": false, "each": [
+          { "x": 270, "enter": { "anim": "pop", "at": 2.2 } }, { "x": 450, "enter": { "anim": "pop", "at": 2.35 } }, { "x": 630, "enter": { "anim": "pop", "at": 2.5 } }, { "x": 810, "enter": { "anim": "pop", "at": 2.65 } }
+        ] },
+        { "type": "label", "text": "SOURCE: FDA", "font": "mono", "size": 26, "bg": "#111111", "color": "#fdfcf7", "x": 540, "y": 1645, "jitter": 0 }
+      ]
+    }
+  ]
+}

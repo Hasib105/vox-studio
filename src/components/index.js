@@ -2,6 +2,7 @@
 const registry = {
   ...require('./basic'),
   ...require('./objects'),
+  ...require('./props'),
   ...require('./map'),
   group: {
     doc: 'Groups child elements so they move/animate together. Children positions are relative to the group.',

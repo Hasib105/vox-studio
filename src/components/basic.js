@@ -23,7 +23,8 @@ module.exports = {
     doc: 'Text printed on a torn paper chip (tags, place names, kickers). Supports \\n line breaks.',
     props: { text: 'the words', size: 'font size px (default 40)', font: 'headline | body | mono', bg: 'paper color or "none"', color: 'text color', w: 'fixed width', h: 'fixed height', padX: 'horizontal padding', rot: 'rotation radians', align: 'center | left' },
     draw(ctx, p, S) {
-      chip(ctx, S, p.text ?? '', 0, 0, { size: p.size || 40, font: p.font || 'body', bg: p.bg ?? '#fdfcf7', color: p.color, w: p.w, h: p.h, padX: p.padX, padY: p.padY, key: S.key, lh: p.lh, align: p.align, amp: p.amp, ht: p.ht });
+      const bg = p.bg ?? '#fdfcf7';
+      chip(ctx, S, p.text ?? '', 0, 0, { size: p.size || 40, font: p.font || S.theme.labelFont || 'body', bg, color: p.color, w: p.w, h: p.h, padX: p.padX, padY: p.padY, key: S.key, lh: p.lh, align: p.align, amp: p.amp, ht: p.ht, tape: p.tape ?? (S.theme.labelTape && bg !== 'none') });
     },
   },
 
@@ -109,13 +110,18 @@ module.exports = {
       const v = Math.round(p.value ?? 0); let str = String(v).padStart(p.pad ?? 3, '0');
       if (p.native !== false) str = nativeDigits(str, S.lang);
       const showSuffix = p.suffix && (p.suffixAt === undefined || S.sec >= p.suffixAt);
-      const chars = [...str, ...(showSuffix ? [p.suffix] : [])], n = chars.length, size = p.size || 250, cw = size * 0.76, gap = size * 0.84;
+      const digits = [...str], size = p.size || 250, cw = size * 0.76, gap = size * 0.84;
+      ctx.font = font(S, 'headline', size);
+      const sufW = p.suffix ? Math.max(cw, ctx.measureText(p.suffix).width + size * 0.3) : 0;
+      // center the whole group (digits + suffix) even before the suffix appears
+      const lastC = (digits.length - 1) * gap, sufC = lastC + cw / 2 + size * 0.08 + sufW / 2;
+      const right = p.suffix ? sufC + sufW / 2 : lastC + cw / 2, x0 = -(right - cw / 2) / 2;
       const rots = [-0.06, 0.04, -0.03, 0.06, -0.05];
-      chars.forEach((c, i) => {
-        const isSuf = showSuffix && i === n - 1;
-        const sc = isSuf ? require('../engine/core').ease('back', (S.sec - p.suffixAt) / 0.35) : 1;
-        chip(ctx, S, c, (i - (n - 1) / 2) * gap, i % 2 ? 14 : -10, { size, font: 'headline', w: cw, h: size * 1.16, bg: isSuf ? (p.suffixBg || '#c1121f') : (p.bg || '#111'), color: p.color || '#fff', rot: rots[i % 5], scale: sc, key: S.key + 'd' + i, amp: 5, base: 0.06, jitter: 0.7 });
-      });
+      digits.forEach((c, i) => chip(ctx, S, c, x0 + i * gap, i % 2 ? 14 : -10, { size, font: 'headline', w: cw, h: size * 1.16, bg: p.bg || '#111', color: p.color || '#fff', rot: rots[i % 5], key: S.key + 'd' + i, amp: 5, base: 0.06, jitter: 0.7 }));
+      if (showSuffix) {
+        const sc = require('../engine/core').ease('back', (S.sec - (p.suffixAt ?? 0)) / 0.35);
+        chip(ctx, S, p.suffix, x0 + sufC, digits.length % 2 ? 14 : -10, { size, font: 'headline', w: sufW, h: size * 1.16, bg: p.suffixBg || '#c1121f', color: p.color || '#fff', rot: rots[digits.length % 5], scale: sc, key: S.key + 'suf', amp: 5, base: 0.06, jitter: 0.7 });
+      }
     },
   },
 
@@ -150,7 +156,7 @@ module.exports = {
     draw(ctx, p, S) {
       const cols = p.colors || ['#e63946', '#f1faee', '#ffd60a'], t = twos(S.sec, S.fps);
       for (let i = 0; i < (p.count || 16); i++) {
-        const r = mulberry(hash(S.key) + i * 97), x = r() * 1080, sp = (120 + r() * 160) * (p.speed || 1), y = ((r() * 1920 + t * sp) % 2020) - 50;
+        const r = mulberry(hash(S.key) + i * 97), x = r() * S.W, sp = (120 + r() * 160) * (p.speed || 1), y = ((r() * S.H + t * sp) % (S.H + 100)) - 50;
         ctx.save(); ctx.translate(x, y); ctx.rotate(t * (r() - .5) * 4); ctx.fillStyle = cols[i % cols.length]; ctx.fillRect(-10, -6, 20, 12); ctx.restore();
       }
     },

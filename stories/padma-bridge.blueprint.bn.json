@@ -1,0 +1,72 @@
+{
+  "title": "Padma Bridge (Bangla, blueprint)",
+  "lang": "bn", "format": "9:16", "theme": "blueprint",
+  "sources": ["https://www.padmabridge.gov.bd/", "https://en.wikipedia.org/wiki/Padma_Bridge"],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5.5, "bg": "#0d3b8c",
+      "camera": { "move": "push_in", "amount": 0.06 },
+      "headline": { "text": "পদ্মা সেতু", "style": "dark", "max": 150 },
+      "caption": "*২৫ জুন ২০২২:* যান চলাচলের জন্য খুলে দেওয়া হলো পদ্মা সেতু।",
+      "elements": [
+        { "type": "wave", "y": 1060, "color": "#1d4e9c", "amp": 10 },
+        { "type": "bridge", "x": 540, "y": 960, "w": 1000, "spans": 7, "enter": { "anim": "grow", "at": 0.3, "dur": 2.4 } },
+        { "type": "label", "text": "মাওয়া", "size": 40, "x": 150, "y": 820, "enter": { "anim": "pop", "at": 0.4 } },
+        { "type": "label", "text": "জাজিরা", "size": 40, "x": 930, "y": 820, "enter": { "anim": "pop", "at": 2.6 } }
+      ]
+    },
+    {
+      "id": "2-map", "dur": 5.5, "bg": "#0d3b8c", "transition": "slide",
+      "camera": { "move": "tilt", "from": 30, "to": -30 },
+      "caption": "সেতুটি দক্ষিণ-পশ্চিমের *২১টি জেলাকে* সরাসরি রাজধানীর সঙ্গে যুক্ত করেছে।",
+      "elements": [
+        { "type": "map", "id": "m", "x": 540, "y": 880, "w": 820, "h": 900, "focus": ["Bangladesh"], "countries": "focus",
+          "labels": [{ "text": "বাংলাদেশ", "geo": [90.6, 24.6], "size": 60 }], "enter": "pop" },
+        { "type": "pin", "pos": { "geo": [90.41, 23.81] }, "enter": { "anim": "drop", "at": 0.6 } },
+        { "type": "label", "text": "ঢাকা", "size": 36, "pos": { "geo": [90.41, 23.81], "dx": 90, "dy": -30 }, "enter": { "anim": "pop", "at": 0.8 } },
+        { "type": "xmark", "pos": { "geo": [90.26, 23.44] }, "scale": 0.6, "color": "#ffd23f", "enter": { "anim": "pop", "at": 1.4 } },
+        { "type": "label", "text": "পদ্মা সেতু", "size": 36, "pos": { "geo": [90.26, 23.44], "dx": -150, "dy": 40 }, "enter": { "anim": "pop", "at": 1.6 } },
+        { "type": "path", "points": [{ "geo": [89.2, 22.6] }, { "geo": [89.9, 23.2] }, { "geo": [90.26, 23.44] }, { "geo": [90.41, 23.81] }], "curve": true, "color": "#ffd23f", "width": 8, "dash": [16, 12], "enter": { "anim": "grow", "at": 1.8, "dur": 1.6 }, "arrowHead": true }
+      ]
+    },
+    {
+      "id": "3-length", "dur": 5.5, "bg": "#0d3b8c",
+      "camera": { "move": "pan", "from": 50, "to": -50 },
+      "headline": { "text": "৬.১৫ কিমি", "style": "dark", "max": 150 },
+      "caption": "দৈর্ঘ্য *৬.১৫ কিলোমিটার*: ১৫০ মিটারের *৪১টি স্প্যান*।",
+      "elements": [
+        { "type": "counter", "x": 540, "y": 820, "size": 230, "value": { "from": 0, "to": 41, "at": 0.4, "dur": 1.6, "ease": "out" }, "pad": 2, "suffix": "টি", "suffixAt": 2.1, "enter": "pop" },
+        { "type": "label", "text": "স্প্যান × ১৫০ মিটার", "size": 46, "x": 540, "y": 1080, "enter": { "anim": "slide", "from": "left", "at": 1.0 } },
+        { "type": "bridge", "x": 540, "y": 1240, "w": 940, "spans": 10, "scale": 0.9, "enter": { "anim": "grow", "at": 0.4, "dur": 2.8 } }
+      ]
+    },
+    {
+      "id": "4-decks", "dur": 5.5, "bg": "#0d3b8c", "transition": "slide",
+      "camera": "static",
+      "caption": "দোতলা সেতু: ওপরে *চার লেনের সড়ক*, নিচে *রেলপথ*।",
+      "elements": [
+        { "type": "paper", "w": 900, "h": 60, "x": 540, "y": 760, "color": "#3a6fc4", "enter": { "anim": "slide", "from": "left", "at": 0.3 } },
+        { "type": "truck", "x": { "from": -100, "to": 1300, "at": 0.8, "dur": 4, "ease": "linear" }, "y": 730, "scale": 0.45, "jitter": 0.2 },
+        { "type": "paper", "w": 30, "h": 380, "x": 160, "y": 950, "color": "#3a6fc4", "enter": { "anim": "unfold", "at": 0.2 } },
+        { "type": "paper", "w": 30, "h": 380, "x": 920, "y": 950, "color": "#3a6fc4", "enter": { "anim": "unfold", "at": 0.3 } },
+        { "type": "paper", "w": 900, "h": 50, "x": 540, "y": 1080, "color": "#3a6fc4", "enter": { "anim": "slide", "from": "right", "at": 0.6 } },
+        { "type": "road", "w": 860, "h": 22, "x": 540, "y": 1040, "color": "#5b86d6", "scroll": 120 },
+        { "type": "label", "size": 46, "each": [
+          { "text": "সড়ক (৪ লেন)", "x": 540, "y": 620, "enter": { "anim": "pop", "at": 1.0 } },
+          { "text": "রেলপথ", "x": 540, "y": 1190, "enter": { "anim": "pop", "at": 1.4 } }
+        ] }
+      ]
+    },
+    {
+      "id": "5-funding", "dur": 5.5, "bg": "#0d3b8c",
+      "camera": { "move": "push_in", "amount": 0.05 },
+      "headline": { "text": "নিজস্ব\nঅর্থায়ন", "style": "dark" },
+      "caption": "নির্মিত হয়েছে *দেশের নিজস্ব অর্থায়নে*, খরচ প্রায় *৩০,১৯৩ কোটি টাকা*।",
+      "elements": [
+        { "type": "bag", "x": 540, "y": 920, "scale": 1.6, "symbol": "৳", "enter": { "anim": "drop", "at": 0.3, "shake": 10 } },
+        { "type": "label", "text": "~৩০,১৯৩ কোটি ৳", "size": 54, "font": "headline", "x": 540, "y": 1210, "enter": { "anim": "stamp", "at": 1.4 } },
+        { "type": "label", "text": "সূত্র: বাংলাদেশ সেতু কর্তৃপক্ষ", "font": "mono", "size": 26, "bg": "#09286a", "color": "#e9f2ff", "x": 540, "y": 1645, "jitter": 0 }
+      ]
+    }
+  ]
+}

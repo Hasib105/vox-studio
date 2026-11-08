@@ -22,7 +22,7 @@ const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio
   console.log('invalid story rejected:', !!bad.isError, '-', bad.content[0].text.split('\n')[1]);
   const prev = await call('vox_preview', { story_path: 'stories/_template.json' });
   console.log('preview:', prev.content[0].type, prev.content[0].mimeType, Math.round(prev.content[0].data.length / 1024) + 'KB base64');
-  const job = await call('vox_render_video', { story_path: 'stories/_template.json', scale: 0.5, output_path: 'output/_template-draft.mp4' });
+  const job = await call('vox_render_video', { story_path: 'stories/_template.json', quality: 'draft', output_path: 'output/_template-draft.mp4' });
   const id = job.content[0].text.match(/job\d+/)[0];
   let st; do { st = (await call('vox_render_status', { job_id: id, wait_seconds: 50 })).content[0].text; console.log('status:', st.split('\n')[0]); } while (st.startsWith('RUNNING'));
   await client.close();

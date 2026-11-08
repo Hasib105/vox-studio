@@ -11,7 +11,7 @@ const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { renderVideo, renderStills, renderFrameAt, slug } = require('../engine/render');
 const { loadStory } = require('../engine/loader');
 const { catalog } = require('../components');
-const { THEMES } = require('../engine/themes');
+const { themeList } = require('../engine/themes');
 const { countryNames } = require('../engine/geo');
 
 const ROOT = path.join(__dirname, '..', '..');
@@ -32,6 +32,7 @@ function storyInput({ story, story_path }) {
   if (story) return typeof story === 'string' ? JSON.parse(story) : story;
   throw new Error('Provide either "story" (JSON object) or "story_path".');
 }
+const themeArg = { theme: z.string().optional().describe('Override the visual style: vox-news, scrapbook, protest, papercraft, noir, riso, blueprint, retro70s, swiss (see vox_list_themes)') };
 const text = t => ({ content: [{ type: 'text', text: t }] });
 const fail = e => ({ isError: true, content: [{ type: 'text', text: 'Error: ' + (e && e.message || e) }] });
 async function imageContent(file, maxW = 1400) {
@@ -61,6 +62,12 @@ server.registerTool('vox_list_components', {
   inputSchema: { name: z.string().optional() },
 }, async ({ name }) => text(catalogText(name) || `No component "${name}".`));
 
+server.registerTool('vox_list_themes', {
+  title: 'List visual styles',
+  description: 'The 9 visual styles. Any story can be rendered in any style (set "theme" in the story or pass theme to preview/render).',
+  inputSchema: {},
+}, async () => text(themeList().map(t => `- **${t.name}** (${t.label}): ${t.description}`).join('\n')));
+
 server.registerTool('vox_list_countries', {
   title: 'List map country names',
   description: 'Natural Earth country names usable in map "focus", "fill", "border.of". Optional filter substring.',
@@ -82,12 +89,12 @@ server.registerTool('vox_validate_story', {
 server.registerTool('vox_preview', {
   title: 'Preview story as images',
   description: 'Render a contact sheet (one frame per scene) and RETURN IT AS AN IMAGE so you can check the look before rendering video. Use scene + times to inspect one scene\'s animation (e.g. times [0.1,0.4,0.8]). Fast (seconds).',
-  inputSchema: { ...storyArgs, at: z.number().optional().describe('Fraction of each scene to sample (default 0.85)'), scene: z.number().optional().describe('1-based scene number to inspect'), times: z.array(z.number()).optional().describe('Fractions of the scene to sample, with scene') },
+  inputSchema: { ...storyArgs, ...themeArg, at: z.number().optional().describe('Fraction of each scene to sample (default 0.85)'), scene: z.number().optional().describe('1-based scene number to inspect'), times: z.array(z.number()).optional().describe('Fractions of the scene to sample, with scene') },
 }, async (a) => {
   try {
     const input = storyInput(a);
     const name = typeof input === 'string' ? path.basename(input, '.json') : slug(input.title || 'story');
-    const r = await renderStills(input, { at: a.at, scene: a.scene, times: a.times, outDir: path.join(OUT, slug(name), 'stills'), baseDir: WORKSPACE });
+    const r = await renderStills(input, { theme: a.theme, at: a.at, scene: a.scene, times: a.times, outDir: path.join(OUT, slug(name), 'stills'), baseDir: WORKSPACE });
     return { content: [await imageContent(r.sheet), { type: 'text', text: `Saved: ${r.sheet}` }] };
   } catch (e) { return fail(e); }
 });
@@ -95,11 +102,11 @@ server.registerTool('vox_preview', {
 server.registerTool('vox_render_frame', {
   title: 'Render one frame',
   description: 'Render a single full-resolution frame at a given second of the video and return it as an image (for close inspection of text, maps, layout).',
-  inputSchema: { ...storyArgs, seconds: z.number().describe('Time in the video, in seconds') },
+  inputSchema: { ...storyArgs, ...themeArg, seconds: z.number().describe('Time in the video, in seconds') },
 }, async (a) => {
   try {
     const out = path.join(OUT, `frame-${Date.now()}.png`);
-    await renderFrameAt(storyInput(a), a.seconds, out, { baseDir: WORKSPACE });
+    await renderFrameAt(storyInput(a), a.seconds, out, { baseDir: WORKSPACE, theme: a.theme });
     return { content: [await imageContent(out, 1080), { type: 'text', text: `Saved: ${out}` }] };
   } catch (e) { return fail(e); }
 });
@@ -108,11 +115,13 @@ server.registerTool('vox_render_frame', {
 const jobs = new Map(); let jobSeq = 0;
 server.registerTool('vox_render_video', {
   title: 'Render the MP4',
-  description: 'Start rendering the final MP4 (parallel, local). Returns a job_id immediately; poll vox_render_status. Typical speed: ~1-2 min for a 40s 1080x1920 video. Use scale 0.5 for a fast draft.',
+  description: 'Start rendering the final MP4 (parallel, local). Returns a job_id immediately; poll vox_render_status. Typical: 2-4 min for 40s at quality high; use quality draft for a quick check.',
   inputSchema: {
     ...storyArgs,
     output_path: z.string().optional().describe('Where to write the .mp4 (default <output>/<title>.mp4)'),
-    scale: z.number().optional().describe('Resolution scale, 0.5 = fast half-res draft (default 1)'),
+    ...themeArg,
+    quality: z.enum(['draft', 'standard', 'high', 'max']).optional().describe('draft = fast half-size preview; high (default) = drawn at 1.5x and downscaled; max = 2x, near-lossless'),
+    resolution: z.enum(['720p', '1080p', '1440p', '4k']).optional().describe('Output size relative to the story format (4k on a 16:9 story = 3840x2160)'),
     sfx: z.boolean().optional().describe('Add procedural paper-foley sound effects (default: story.audio.sfx or false)'),
     music: z.string().optional().describe('Path to a music file to mix underneath'),
     workers: z.number().optional().describe('Parallel render workers (default: CPU count - 1, max 6)'),
@@ -123,7 +132,7 @@ server.registerTool('vox_render_video', {
     await loadStory(input, { baseDir: WORKSPACE }); // validate up front
     const id = `job${++jobSeq}`, job = { id, status: 'running', progress: [], started: Date.now() };
     jobs.set(id, job);
-    renderVideo(input, { out: a.output_path && path.resolve(WORKSPACE, a.output_path), outDir: OUT, scale: a.scale, sfx: a.sfx, music: a.music && path.resolve(WORKSPACE, a.music), workers: a.workers, baseDir: WORKSPACE, log: m => { job.progress.push(m); log(m); } })
+    renderVideo(input, { out: a.output_path && path.resolve(WORKSPACE, a.output_path), outDir: OUT, theme: a.theme, quality: a.quality, resolution: a.resolution, sfx: a.sfx, music: a.music && path.resolve(WORKSPACE, a.music), workers: a.workers, baseDir: WORKSPACE, log: m => { job.progress.push(m); log(m); } })
       .then(r => { job.status = 'done'; job.result = r; })
       .catch(e => { job.status = 'error'; job.error = e.message; log(e.stack); });
     return text(`Started ${id}. Poll vox_render_status with job_id "${id}".`);

@@ -31,6 +31,15 @@ Speak the user's language. No em dashes in on-screen copy.
    Verify with frames from the MP4 (`node_modules/ffmpeg-static/ffmpeg -i out.mp4 -vf "select=..."`).
 7. **Deliver** the MP4 path, the caption script, and sources.
 
+## Styles and quality
+- 9 themes restyle any story: `vox-news`, `scrapbook`, `protest`, `papercraft`, `noir`, `riso`, `blueprint`,
+  `retro70s`, `swiss` (`node src/cli.js themes`). Pick by topic: news → vox-news/protest/noir, science and
+  how-it-works → blueprint/papercraft, history → retro70s/noir, lifestyle → scrapbook/riso, data → swiss.
+  Show the user `node src/cli.js gallery <story> --scenes 1,3` to choose by eye.
+- Each theme has a matching example story in `stories/` (see `docs/STORY_FORMAT.md`, "Example stories").
+- Final renders: `--quality high` (default) or `max`; `--resolution 4k` for 16:9. Drafts: `--quality draft`.
+- 16:9: set `"format": "16:9"` and lay out for 1920x1080 (headline left, visual right works well).
+
 ## Translations
 Copy the story, set `"lang"` (e.g. `"bn"`), translate every `text`, `caption`, `headline` and map `labels`
 string. Bangla uses Hind Siliguri automatically and native digits in `counter`. Re-run stills: translated

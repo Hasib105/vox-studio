@@ -1,0 +1,118 @@
+{
+  "title": "Iron Gate: US expands Iran blockade (16x9)",
+  "lang": "en",
+  "format": "16:9",
+  "theme": "vox-news",
+  "audio": { "sfx": false },
+  "sources": [
+    "https://www.cbsnews.com/live-updates/iran-war-trump-us-strait-hormuz-persian-gulf/",
+    "https://www.turkiyetoday.com/region/us-launches-task-force-iron-gate-to-choke-irans-land-caspian-routes-3231934"
+  ],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 6, "bg": "#c1121f",
+      "camera": { "move": "push_in", "amount": 0.06 },
+      "shakes": [{ "at": 1.9, "amp": 16 }],
+      "headline": { "text": "BLOCKADE GOES\nON LAND", "style": "dark", "x": 520, "y": 250, "max": 120, "maxW": 760 },
+      "caption": "*Nov 7:* US Central Command launches *Task Force Iron Gate.*",
+      "elements": [
+        { "type": "halftone", "color": "#6a040f", "x": -100, "y": 500, "alpha": 0.25, "spacing": 22 },
+        { "type": "newspaper", "x": 260, "y": 640, "rot": -0.12, "w": 330, "h": 240 },
+        { "type": "newspaper", "x": 640, "y": 690, "rot": 0.08 },
+        { "type": "map", "id": "m", "x": 1350, "y": 500, "w": 800, "h": 600, "focus": ["Iran"], "countries": "focus",
+          "labels": [{ "text": "IRAN", "geo": [54.5, 32.6], "size": 90 }], "enter": { "anim": "pop", "dur": 0.5 } },
+        { "type": "gate", "x": 1350, "y": 500, "w": 900, "h": 640, "close": { "kf": [[1.0, 0], [1.9, 1, "back"]] }, "sfx": "thud", "sfxAt": 1.9 },
+        { "type": "hazard", "x": 960, "y": 800, "w": 2300, "rot": -0.03, "enter": { "anim": "slide", "from": "right", "at": 0.3, "dur": 0.6 } },
+        { "type": "label", "text": "NOV 7, 2026", "font": "mono", "size": 40, "x": 520, "y": 470, "rot": 0.04, "enter": { "anim": "pop", "at": 0.6 } }
+      ]
+    },
+    {
+      "id": "2-sea", "dur": 6, "bg": "#1d3f66", "transition": "tear",
+      "camera": { "move": "pan", "from": 80, "to": -80, "scale": 1.06 },
+      "headline": { "text": "SINCE JULY: THE SEA", "style": "cream", "x": 640, "y": 185, "max": 110 },
+      "caption": "Since July, the US Navy has blockaded *Iran's ports* on the Gulf and the Gulf of Oman.",
+      "elements": [
+        { "type": "paper", "shape": "poly", "x": 960, "y": 300, "points": [[-1400, -500], [1400, -500], [1400, 255], [-1400, 255]], "color": "#a8dadc", "ht": "#7fb7c4", "htA": 0.4, "shadow": 0, "jitter": 0 },
+        { "type": "paper", "shape": "circle", "r": 115, "x": 1520, "y": 450, "color": "#ffd166", "ht": "#f4a261", "htA": 0.5 },
+        { "type": "warship", "y": 540, "scale": 0.85, "loop": { "anim": "bob", "amp": 4 }, "each": [{ "x": -80 }, { "x": 200 }, { "x": 480 }, { "x": 760 }, { "x": 1040 }, { "x": 1320 }, { "x": 1600 }, { "x": 1880 }, { "x": 2160 }] },
+        { "type": "wave", "y": 560, "color": "#457b9d" },
+        { "type": "cargoShip", "y": 650, "scale": 0.8, "loop": { "anim": "bob", "amp": 4 },
+          "x": { "kf": [[0.2, 2150], [1.8, 1150, "out"], [2.4, 1150], [5.2, 2200, "inOut"]] }, "flipX": { "kf": [[1.9, -1], [2.3, 1]] } },
+        { "type": "uturn", "x": 1140, "y": 545, "enter": { "anim": "grow", "at": 2.0, "dur": 0.5 }, "exit": { "anim": "fade", "at": 2.7, "dur": 0.4 } },
+        { "type": "wave", "y": 680, "color": "#2f6690" },
+        { "type": "cargoShip", "y": 770, "scale": 0.8, "loop": { "anim": "bob", "amp": 4 },
+          "x": { "kf": [[0.5, 2150], [2.1, 1300, "out"], [2.7, 1300], [5.5, 2300, "inOut"]] }, "flipX": { "kf": [[2.2, -1], [2.6, 1]] } },
+        { "type": "uturn", "x": 1290, "y": 665, "enter": { "anim": "grow", "at": 2.3, "dur": 0.5 }, "exit": { "anim": "fade", "at": 3.0, "dur": 0.4 } },
+        { "type": "wave", "y": 800, "color": "#1d4e7a" },
+        { "type": "wave", "y": 930, "color": "#163d63" }
+      ]
+    },
+    {
+      "id": "3-count", "dur": 5, "bg": "#f2b134",
+      "camera": { "move": "push_in", "amount": 0.04, "scale": 1.02 },
+      "shakes": [{ "at": 2.3, "amp": 10 }],
+      "caption": "By October, CENTCOM said *130+ vessels* had been redirected.",
+      "elements": [
+        { "type": "paper", "shape": "circle", "r": 360, "x": 760, "y": 440, "color": "#e76f51", "ht": "#9d0208", "htA": 0.35, "loop": { "anim": "pulse", "amp": 0.015 } },
+        { "type": "counter", "x": 760, "y": 400, "size": 220, "value": { "from": 0, "to": 130, "at": 0.2, "dur": 2, "ease": "out" }, "pad": 3, "suffix": "+", "suffixAt": 2.3, "enter": { "anim": "pop", "dur": 0.4 } },
+        { "type": "label", "text": "VESSELS REDIRECTED", "size": 58, "x": 760, "y": 640, "rot": -0.02, "enter": { "anim": "slide", "from": "left", "at": 0.5 } },
+        { "type": "label", "text": "SOURCE: CENTCOM, OCT 2026", "font": "mono", "size": 28, "bg": "#111111", "color": "#ffd60a", "x": 760, "y": 730, "rot": 0.02, "enter": { "anim": "pop", "at": 0.9 } },
+        { "type": "cargoShip", "scale": 0.6, "loop": { "anim": "bob", "amp": 5 }, "each": [
+          { "x": 1450, "y": 220, "enter": { "anim": "slide", "from": "right", "at": 1.0 }, "flipX": { "kf": [[1.9, 1], [2.25, -1]] } },
+          { "x": 1650, "y": 400, "enter": { "anim": "slide", "from": "right", "at": 1.15 }, "flipX": { "kf": [[2.05, 1], [2.4, -1]] } },
+          { "x": 1450, "y": 580, "enter": { "anim": "slide", "from": "right", "at": 1.3 }, "flipX": { "kf": [[2.2, 1], [2.55, -1]] } }
+        ] },
+        { "type": "uturn", "r": 42, "color": "#111111", "each": [
+          { "x": 1450, "y": 145, "enter": { "anim": "grow", "at": 2.0 } }, { "x": 1650, "y": 325, "enter": { "anim": "grow", "at": 2.15 } }, { "x": 1450, "y": 505, "enter": { "anim": "grow", "at": 2.3 } }
+        ] }
+      ]
+    },
+    {
+      "id": "4-land", "dur": 6.5, "bg": "#2a9d8f", "transition": "whip",
+      "camera": { "move": "tilt", "from": 20, "to": -20, "scale": 1.0 },
+      "headline": { "text": "NOW:\nLAND +\nCASPIAN", "style": "accent", "x": 330, "y": 330, "max": 120, "maxW": 520 },
+      "caption": "Iron Gate targets Iran's borders with Türkiye, Afghanistan, Turkmenistan, Pakistan *and the Caspian Sea.*",
+      "elements": [
+        { "type": "halftone", "color": "#1d6f66", "x": -150, "y": 300, "alpha": 0.2 },
+        { "type": "map", "id": "m", "x": 1210, "y": 430, "w": 1040, "h": 640, "focus": ["Iran"], "card": { "color": "#4ea8de", "pad": 30 },
+          "contextFill": "#e3d5b8", "border": { "of": "Iran", "progress": { "from": 0, "to": 1, "at": 0.3, "dur": 1.6 } },
+          "labels": [{ "text": "IRAN", "geo": [54.5, 32.4], "size": 84 }], "enter": { "anim": "pop", "dur": 0.4 } },
+        { "type": "arrow", "each": [
+          { "from": { "geo": [41.2, 40.6] }, "to": { "geo": [44.4, 38.6] }, "enter": { "anim": "grow", "at": 1.0, "dur": 0.45 } },
+          { "from": { "geo": [61.5, 40.6] }, "to": { "geo": [58.2, 37.9] }, "enter": { "anim": "grow", "at": 1.4, "dur": 0.45 } },
+          { "from": { "geo": [66.5, 35.0] }, "to": { "geo": [60.9, 33.5] }, "enter": { "anim": "grow", "at": 1.8, "dur": 0.45 } },
+          { "from": { "geo": [66.5, 26.2] }, "to": { "geo": [62.4, 27.6] }, "enter": { "anim": "grow", "at": 2.2, "dur": 0.45 } },
+          { "from": { "geo": [49.2, 40.7] }, "to": { "geo": [51.0, 38.2] }, "enter": { "anim": "grow", "at": 2.6, "dur": 0.45 } }
+        ] },
+        { "type": "xmark", "scale": 0.75, "each": [
+          { "pos": { "geo": [44.4, 38.6] }, "enter": { "anim": "pop", "at": 1.4, "dur": 0.3 } }, { "pos": { "geo": [58.2, 37.9] }, "enter": { "anim": "pop", "at": 1.8, "dur": 0.3 } },
+          { "pos": { "geo": [60.9, 33.5] }, "enter": { "anim": "pop", "at": 2.2, "dur": 0.3 } }, { "pos": { "geo": [62.4, 27.6] }, "enter": { "anim": "pop", "at": 2.6, "dur": 0.3 } },
+          { "pos": { "geo": [51.0, 38.2] }, "enter": { "anim": "pop", "at": 3.0, "dur": 0.3 } }
+        ] },
+        { "type": "label", "size": 32, "each": [
+          { "text": "TÜRKIYE", "pos": { "geo": [41.6, 39.3] }, "rot": -0.05, "enter": { "anim": "pop", "at": 0.9 } },
+          { "text": "TURKMENISTAN", "pos": { "geo": [61.0, 39.9] }, "rot": 0.04, "enter": { "anim": "pop", "at": 1.3 } },
+          { "text": "AFGHANISTAN", "pos": { "geo": [65.6, 33.1] }, "rot": 0.06, "enter": { "anim": "pop", "at": 1.7 } },
+          { "text": "PAKISTAN", "pos": { "geo": [65.8, 27.7] }, "rot": -0.04, "enter": { "anim": "pop", "at": 2.1 } },
+          { "text": "CASPIAN SEA", "pos": { "geo": [51.0, 40.6] }, "rot": -0.03, "bg": "#1d3557", "color": "#ffffff", "enter": { "anim": "pop", "at": 2.5 } }
+        ] }
+      ]
+    },
+    {
+      "id": "5-hormuz", "dur": 6, "bg": "#1b3a5c", "transition": "tear",
+      "camera": "static",
+      "caption": "Iran says the blockade must end *before Hormuz reopens.*",
+      "elements": [
+        { "type": "map", "id": "h", "x": 960, "y": 470, "w": 1900, "h": 900, "bounds": [[53.6, 24.9], [59.2, 27.6]], "detail": "10m",
+          "fill": { "Iran": "#d8c3a5" }, "contextFill": "#efe0bf", "ht": "#a68a64",
+          "labels": [{ "text": "IRAN", "geo": [57.6, 27.25], "size": 110, "color": "#3d2c1e" }, { "text": "OMAN", "geo": [56.25, 25.8], "size": 44, "color": "#3d2c1e" }, { "text": "UAE", "geo": [55.0, 25.0], "size": 44, "color": "#3d2c1e" }] },
+        { "type": "label", "text": "STRAIT OF HORMUZ", "size": 40, "pos": { "geo": [54.9, 26.5] }, "rot": -0.04, "enter": { "anim": "pop", "at": 0.2 } },
+        { "type": "tanker", "scale": 0.5, "loop": { "anim": "bob", "amp": 4 }, "each": [{ "pos": { "geo": [55.5, 26.05] } }, { "pos": { "geo": [57.6, 25.85] } }, { "pos": { "geo": [57.2, 25.4] } }, { "pos": { "geo": [55.0, 26.0] } }] },
+        { "type": "path", "points": [{ "geo": [56.15, 27.05] }, { "geo": [56.45, 26.65] }, { "geo": [56.7, 26.2] }], "color": "#e63946", "width": 10, "dash": [22, 14], "enter": { "anim": "grow", "at": 0.6, "dur": 0.9 } },
+        { "type": "padlock", "pos": { "geo": [56.48, 26.62] }, "scale": 0.38, "loop": { "anim": "sway", "amp": 0.07 }, "enter": { "anim": "drop", "at": 1.3, "shake": 10 } },
+        { "type": "question", "round": true, "size": 100, "x": 1720, "y": 200, "enter": { "anim": "pop", "at": 0.5 }, "loop": { "anim": "pulse", "amp": 0.04 } },
+        { "type": "label", "text": "SOURCES: CENTCOM VIA CBS NEWS, REUTERS", "font": "mono", "size": 22, "bg": "#111111", "color": "#fdfcf7", "x": 1660, "y": 1040, "jitter": 0 }
+      ]
+    }
+  ]
+}

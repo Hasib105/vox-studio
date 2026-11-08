@@ -67,9 +67,11 @@ async function loadStory(input, opts = {}) {
   const errs = validate(story);
   if (errs.length) { const e = new Error('Story is invalid:\n  - ' + errs.join('\n  - ')); e.errors = errs; throw e; }
   registerFonts((story.fontDirs || []).map(d => path.resolve(baseDir, d)));
+  if (opts.theme) story.theme = opts.theme;
   const { theme, fonts } = resolveTheme(story.theme, story.themeOverrides, story.lang);
   const [W, H] = story.size;
-  if (H !== 1920 && !(story.themeOverrides && story.themeOverrides.caption && story.themeOverrides.caption.y)) theme.caption = { ...theme.caption, y: Math.round(H * 0.8) };
+  // caption height: above the Shorts UI on vertical video, low third on landscape/square
+  if (H !== 1920 && !(story.themeOverrides && story.themeOverrides.caption && story.themeOverrides.caption.y)) theme.caption = { ...theme.caption, y: Math.round(H * (W > H ? 0.865 : 0.8)) };
   story._theme = theme; story._fonts = fonts;
   story.scenes.forEach((sc, i) => { sc.id = sc.id ?? String(i + 1); sc._shakes = collectShakes(sc); });
   // preload images used by photo elements

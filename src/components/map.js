@@ -51,6 +51,9 @@ module.exports = {
     prepare(el, S) { const m = build(el); const id = el.id || 'map'; S.maps[id] = m; if (!S.maps._default) S.maps._default = m; },
     draw(ctx, p, S) {
       const m = build(S.el);
+      // paper-base themes do not paint the scene color, so give context maps a water card in that color
+      const kind = (S.theme.background || {}).kind;
+      if (!p.card && p.countries !== 'focus' && ['grid', 'fiber', 'riso', 'blueprint'].includes(kind)) p.card = { color: S.scene.bg, pad: 20 };
       if (p.card) {
         const { box } = m, pad = p.card.pad ?? 30;
         const poly = paper(ctx, rectPts(box.x1 - box.x0 + pad * 2, box.y1 - box.y0 + pad * 2, (box.x0 + box.x1) / 2, (box.y0 + box.y1) / 2), S.key + 'card', p.card.color || '#4ea8de', { amp: 5, ht: p.card.ht || '#1d6fa5', htA: 0.3 });

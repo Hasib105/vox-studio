@@ -1,0 +1,73 @@
+{
+  "title": "Why Earth has seasons (16x9)",
+  "lang": "en", "format": "16:9", "theme": "swiss",
+  "sources": ["https://spaceplace.nasa.gov/seasons/", "https://www.timeanddate.com/astronomy/perihelion-aphelion-solstice.html"],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5.5, "bg": "#1d3557",
+      "camera": { "move": "push_in", "amount": 0.05 },
+      "headline": { "text": "IT'S NOT\nTHE DISTANCE", "style": "dark", "x": 500, "y": 300, "max": 120, "maxW": 760 },
+      "caption": "Many think summer comes when Earth is *closest to the Sun*. It doesn't.",
+      "elements": [
+        { "type": "planet", "kind": "sun", "x": 1350, "y": 450, "r": 200, "enter": "pop" },
+        { "type": "planet", "kind": "earth", "x": 1740, "y": 520, "r": 70, "enter": { "anim": "pop", "at": 0.5 }, "loop": "bob" },
+        { "type": "xmark", "x": 500, "y": 600, "scale": 1.2, "enter": { "anim": "pop", "at": 1.8 } }
+      ]
+    },
+    {
+      "id": "2-perihelion", "dur": 5.5, "bg": "#457b9d", "transition": "slide",
+      "camera": { "move": "pan", "from": 50, "to": -50 },
+      "caption": "Earth is actually closest to the Sun in *early January*, in the middle of northern winter.",
+      "elements": [
+        { "type": "calendar", "x": 560, "y": 430, "days": ["1", "2", "3", "4", "5", "6", "7"], "title": "JANUARY", "on": [2], "progress": 1, "enter": "pop" },
+        { "type": "planet", "kind": "sun", "x": 1450, "y": 420, "r": 150, "enter": { "anim": "pop", "at": 0.4 } },
+        { "type": "planet", "kind": "earth", "x": 1180, "y": 520, "r": 60, "enter": { "anim": "pop", "at": 0.8 } },
+        { "type": "label", "text": "CLOSEST: ~JAN 3", "size": 44, "font": "headline", "x": 1300, "y": 700, "enter": { "anim": "slide", "from": "right", "at": 1.2 } }
+      ]
+    },
+    {
+      "id": "3-tilt", "dur": 5.5, "bg": "#e63946",
+      "camera": "static",
+      "shakes": [{ "at": 1.6, "amp": 8 }],
+      "headline": { "text": "THE TILT", "style": "light", "x": 480, "y": 260 },
+      "caption": "The real reason is Earth's *23.4° tilt*.",
+      "elements": [
+        { "type": "group", "x": 1250, "y": 450, "rot": { "from": 0, "to": 0.41, "at": 0.6, "dur": 1, "ease": "back" }, "elements": [
+          { "type": "paper", "w": 10, "h": 560, "color": "#1d3557", "jitter": 0 },
+          { "type": "planet", "kind": "earth", "r": 200 }
+        ] },
+        { "type": "counter", "x": 500, "y": 560, "size": 170, "value": { "from": 0, "to": 23, "at": 0.6, "dur": 1.2, "ease": "out" }, "pad": 2, "suffix": ".4°", "suffixAt": 1.6, "enter": "pop" }
+      ]
+    },
+    {
+      "id": "4-orbit", "dur": 6, "bg": "#1d3557", "transition": "slide",
+      "camera": { "move": "push_in", "amount": 0.04 },
+      "caption": "In June the north leans *toward* the Sun: longer days, more direct light. In December it leans *away*.",
+      "elements": [
+        { "type": "planet", "kind": "sun", "x": 960, "y": 430, "r": 130, "enter": "pop" },
+        { "type": "path", "points": [[420, 430], [960, 180], [1500, 430], [960, 680], [420, 430]], "curve": true, "color": "#f1faee", "width": 4, "dash": [10, 12], "enter": { "anim": "grow", "at": 0.3, "dur": 1.4 } },
+        { "type": "group", "x": 380, "y": 430, "rot": 0.41, "enter": { "anim": "pop", "at": 1.0 }, "elements": [{ "type": "paper", "w": 6, "h": 220, "color": "#f1faee", "jitter": 0 }, { "type": "planet", "kind": "earth", "r": 75 }] },
+        { "type": "group", "x": 1540, "y": 430, "rot": 0.41, "enter": { "anim": "pop", "at": 1.2 }, "elements": [{ "type": "paper", "w": 6, "h": 220, "color": "#f1faee", "jitter": 0 }, { "type": "planet", "kind": "earth", "r": 75 }] },
+        { "type": "label", "size": 40, "font": "headline", "each": [
+          { "text": "JUNE: NORTH SUMMER", "x": 380, "y": 620, "bg": "#e63946", "color": "#fff", "enter": { "anim": "pop", "at": 1.6 } },
+          { "text": "DEC: NORTH WINTER", "x": 1540, "y": 620, "enter": { "anim": "pop", "at": 2.0 } }
+        ] }
+      ]
+    },
+    {
+      "id": "5-payoff", "dur": 5.5, "bg": "#f1faee",
+      "camera": "static",
+      "headline": { "text": "OPPOSITE\nSEASONS", "style": "dark", "x": 960, "y": 220, "max": 120 },
+      "caption": "That's why seasons are *opposite* in the two hemispheres.",
+      "elements": [
+        { "type": "map", "id": "m", "x": 960, "y": 560, "w": 1500, "h": 420, "bounds": [[-170, -55], [175, 75]], "detail": "110m", "projection": "equalEarth", "contextFill": "#a8dadc", "enter": "fade" },
+        { "type": "paper", "w": 1700, "h": 6, "x": 960, "y": 590, "color": "#e63946", "jitter": 0, "enter": { "anim": "slide", "from": "left", "at": 0.6 } },
+        { "type": "label", "size": 40, "font": "headline", "each": [
+          { "text": "NORTH: SUMMER IN JUNE", "x": 520, "y": 420, "bg": "#e63946", "color": "#fff", "enter": { "anim": "pop", "at": 1.2 } },
+          { "text": "SOUTH: WINTER IN JUNE", "x": 1400, "y": 730, "bg": "#1d3557", "color": "#fff", "enter": { "anim": "pop", "at": 1.6 } }
+        ] },
+        { "type": "label", "text": "SOURCE: NASA SPACE PLACE", "font": "mono", "size": 22, "bg": "#111111", "color": "#fff", "x": 1680, "y": 1045, "jitter": 0 }
+      ]
+    }
+  ]
+}

@@ -307,8 +307,8 @@ module.exports = {
     props: { y: 'top line y', color: 'water color', amp: 'wave height (default 14)', drift: 'side-to-side drift px (default 26)' },
     draw(ctx, p, S) {
       const pts = []; const ph = hash(S.key) % 100 / 10, y = p.y ?? 1000, a = p.amp ?? 14;
-      for (let x = -400; x <= 1500; x += 40) pts.push([x, y + Math.sin(x * 0.018 + ph) * a]);
-      pts.push([1500, 2200], [-400, 2200]);
+      for (let x = -400; x <= S.W + 400; x += 40) pts.push([x, y + Math.sin(x * 0.018 + ph) * a]);
+      pts.push([S.W + 400, S.H + 300], [-400, S.H + 300]);
       ctx.translate(Math.sin(twos(S.sec, S.fps) * 1.4 + ph) * (p.drift ?? 26), 0);
       paper(ctx, pts, S.key, p.color || '#457b9d', { amp: 3, step: 14 });
     },
