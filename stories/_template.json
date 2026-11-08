@@ -1,0 +1,44 @@
+{
+  "title": "new-story",
+  "lang": "en",
+  "format": "9:16",
+  "theme": "vox-news",
+  "audio": { "sfx": false },
+  "sources": [],
+  "scenes": [
+    {
+      "id": "1-hook", "dur": 5, "bg": "#c1121f",
+      "camera": { "move": "push_in", "amount": 0.08 },
+      "headline": { "text": "YOUR BIG\nHOOK HERE", "style": "dark" },
+      "caption": "One sentence that lands the *payoff* in three seconds.",
+      "elements": [
+        { "type": "halftone", "color": "#6a040f", "x": -200, "y": 900 },
+        { "type": "newspaper", "x": 850, "y": 1150, "rot": 0.12 },
+        { "type": "starburst", "x": 540, "y": 900, "r": 330, "color": "#ffd60a", "enter": { "anim": "pop", "at": 0.3 }, "loop": { "anim": "spin", "speed": 0.3 } },
+        { "type": "question", "round": true, "size": 160, "x": 540, "y": 900, "enter": { "anim": "pop", "at": 0.6 }, "loop": "pulse" }
+      ]
+    },
+    {
+      "id": "2-map", "dur": 5, "bg": "#2a9d8f", "transition": "tear",
+      "camera": { "move": "tilt", "from": 30, "to": -30 },
+      "headline": { "text": "WHERE IT\nHAPPENS", "style": "accent" },
+      "caption": "Put the story on a *real map* and point at it.",
+      "elements": [
+        { "type": "map", "id": "m", "x": 540, "y": 900, "w": 880, "h": 700, "focus": ["Bangladesh"], "card": { "color": "#4ea8de" },
+          "labels": [{ "text": "BANGLADESH", "geo": [90.0, 24.9], "size": 60 }], "enter": "pop" },
+        { "type": "pin", "pos": { "geo": [90.41, 23.81] }, "enter": { "anim": "drop", "at": 0.8, "shake": 10 } },
+        { "type": "label", "text": "DHAKA", "pos": { "geo": [90.41, 23.81], "dx": 90, "dy": -40 }, "enter": { "anim": "pop", "at": 1.1 } }
+      ]
+    },
+    {
+      "id": "3-stat", "dur": 4.5, "bg": "#f2b134",
+      "camera": "static",
+      "caption": "Close on the *number* that matters.",
+      "elements": [
+        { "type": "paper", "shape": "circle", "r": 420, "x": 540, "y": 800, "color": "#e76f51", "ht": "#9d0208", "loop": { "anim": "pulse", "amp": 0.015 } },
+        { "type": "counter", "x": 540, "y": 800, "value": { "from": 0, "to": 42, "at": 0.2, "dur": 1.8, "ease": "out" }, "pad": 2, "suffix": "%", "suffixAt": 2.0, "enter": "pop" },
+        { "type": "label", "text": "OF SOMETHING", "size": 60, "x": 540, "y": 1080, "enter": { "anim": "slide", "from": "left", "at": 0.5 } }
+      ]
+    }
+  ]
+}

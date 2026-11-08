@@ -1,0 +1,11 @@
+node_modules/
+output/
+*.mp4
+*.log
+.DS_Store
+
+# third-party skill installed locally (not part of this project)
+.agents/
+.claude/skills/vox-explainer
+skills-lock.json
+.claude/settings.local.json

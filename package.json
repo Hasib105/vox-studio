@@ -1,0 +1,50 @@
+{
+  "name": "vox-studio",
+  "version": "1.0.0",
+  "description": "Vox-style paper-collage explainer videos from JSON. Real maps, any language, local rendering, MCP server for AI assistants.",
+  "main": "src/index.js",
+  "bin": {
+    "vox-studio": "src/mcp/server.js",
+    "vox": "src/cli.js"
+  },
+  "scripts": {
+    "render": "node src/cli.js render",
+    "stills": "node src/cli.js stills",
+    "components": "node src/cli.js components",
+    "mcp": "node src/mcp/server.js",
+    "test": "node src/cli.js check stories/iron-gate.en.json && node src/cli.js check stories/iron-gate.bn.json && node test/mcp-smoke.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@napi-rs/canvas": "^1.1.0",
+    "d3-geo": "^3.1.2",
+    "ffmpeg-static": "^5.3.0",
+    "topojson-client": "^3.1.0",
+    "world-atlas": "^2.0.2",
+    "zod": "^4.6.7"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Hasib105/vox-studio.git"
+  },
+  "homepage": "https://github.com/Hasib105/vox-studio#readme",
+  "keywords": [
+    "vox",
+    "explainer",
+    "video",
+    "collage",
+    "motion-graphics",
+    "mcp",
+    "model-context-protocol",
+    "claude",
+    "animation",
+    "maps",
+    "bangla",
+    "shorts"
+  ],
+  "author": "hasib105"
+}
