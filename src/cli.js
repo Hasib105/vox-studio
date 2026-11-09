@@ -7,12 +7,17 @@ const { loadStory } = require('./engine/loader');
 const { catalog } = require('./components');
 const { themeList } = require('./engine/themes');
 const { countryNames } = require('./engine/geo');
+const tts = require('./engine/tts');
 
 const HELP = `vox-studio — Vox-style paper-collage explainer videos from a JSON story. Runs 100% locally.
 
 Usage:
   vox render  <story.json> [-o out.mp4] [--theme T] [--quality draft|standard|high|max] [--resolution 1080p|1440p|4k]
                            [--sfx] [--music track.mp3] [--workers N] [--frames N]
+                           [--voice gemini:Kore|deepgram|kokoro|edge|auto] [--tts-model M[,M2]] [--no-voice]
+  vox narrate <story.json> [--voice V] [--tts-model M]   voice track only (WAV), cached; shows per-scene timing
+  vox voices  [lang]                      TTS providers, key status (masked), voices per language
+  vox tts-models                          every Gemini TTS model your key can use
   vox stills  <story.json> [--theme T] [--at 0.85] [--full] [--scene 3 --times 0.2,0.5,0.9] [--out dir]
   vox gallery <story.json> [--scenes 1,5] [-o gallery.jpg]   the same shots in every theme
   vox frame   <story.json> <seconds> [--theme T] [-o frame.png]
@@ -27,9 +32,14 @@ Examples:
   vox render my.json --theme scrapbook --quality max          # supersampled 2x, near-lossless
   vox render stories/iron-gate.landscape.json --resolution 4k # 16:9 story at 3840x2160
   vox render my.json --quality draft                          # fast half-size preview
+  vox render stories/iron-gate.bn.json --voice gemini:Charon  # Bangla narration (multi-key rotation)
+  vox render my.json --voice gemini --tts-model gemini-2.5-pro-preview-tts
+  vox render my.json --voice kokoro                           # offline English voice (npm i kokoro-js)
+
+Keys: GEMINI_API_KEY / DEEPGRAM_API_KEY in the environment or .env, several comma-separated (see .env.example).
 `;
 
-const BOOL_FLAGS = new Set(['sfx', 'full']);
+const BOOL_FLAGS = new Set(['sfx', 'full', 'no-voice']);
 function parse(argv) {
   const a = { _: [] };
   for (let i = 0; i < argv.length; i++) {
@@ -50,7 +60,32 @@ async function main() {
   switch (cmd) {
     case 'render':
       need();
-      await renderVideo(file, { out: args.out, scale: num(args.scale), workers: num(args.workers), sfx: args.sfx ? true : undefined, music: args.music, frames: num(args.frames), theme: args.theme, quality: args.quality, resolution: args.resolution });
+      await renderVideo(file, { out: args.out, scale: num(args.scale), workers: num(args.workers), sfx: args.sfx ? true : undefined, music: args.music, frames: num(args.frames), theme: args.theme, quality: args.quality, resolution: args.resolution, voice: args['no-voice'] ? false : args.voice, ttsModel: args['tts-model'] });
+      break;
+    case 'narrate': {
+      need();
+      const raw = JSON.parse(fs.readFileSync(file, 'utf8')); raw.title = raw.title || path.basename(file, '.json');
+      await loadStory(raw, { baseDir: path.dirname(path.resolve(file)) });
+      const outDir = path.dirname(path.resolve(args.out || path.join('output', 'x')));
+      const n = await tts.narrate(raw, { voice: args.voice === undefined ? (raw.voice ?? 'auto') : args.voice, model: args['tts-model'], cacheDir: path.join(outDir, '.tts-cache') });
+      if (!n) { console.log('Nothing to narrate (no "say" lines or captions).'); break; }
+      const { slug } = require('./engine/render');
+      const out = path.resolve(args.out || path.join('output', slug(raw.title) + '-voice.wav'));
+      fs.mkdirSync(path.dirname(out), { recursive: true }); tts.buildVoiceTrack(n.clips, n.duration, out);
+      for (const c of n.clips) console.log(`  ${c.at.toFixed(1).padStart(5)}s  [${raw.scenes[c.scene].id ?? c.scene + 1}] ${c.duration.toFixed(1)}s  ${c.provider}:${c.voice}${c.fellBack ? ' (fallback)' : ''}  ${c.text.slice(0, 60)}`);
+      console.log(`Voice track: ${out}  (${n.duration.toFixed(1)}s)`);
+      break;
+    }
+    case 'voices': {
+      console.log(tts.ttsStatus());
+      const langs = file ? [tts.resolveLanguage(file).lang] : tts.LANGUAGES;
+      console.log('\nlang  edge voice              deepgram             kokoro');
+      for (const l of langs) console.log(`${l.code.padEnd(5)} ${l.edge.padEnd(23)} ${(l.deepgram || '-').padEnd(20)} ${l.kokoro || '-'}`);
+      console.log(`\ngemini voices (any language): ${tts.GEMINI_VOICES.join(', ')}`);
+      break;
+    }
+    case 'tts-models':
+      for (const m of await tts.listGeminiModels()) console.log(m.name.padEnd(36), m.displayName || '');
       break;
     case 'stills': {
       need();

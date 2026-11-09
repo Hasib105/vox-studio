@@ -13,6 +13,7 @@ coordinate below is in those pixels, origin top-left. Scenes play back to back.
   "resolution": "1080p",        // 720p | 1080p | 1440p | 4k (relative to the format)
   "fps": 30,
   "audio": { "sfx": false, "music": "music/bed.mp3", "musicVolume": 0.35 },
+  "voice": "gemini:Charon",     // optional narration (see "Narration"); omit for a silent video
   "sources": ["https://..."],   // for your records; also put a source label on screen
   "scenes": [ /* ... */ ]
 }
@@ -30,6 +31,7 @@ coordinate below is in those pixels, origin top-left. Scenes play back to back.
   "shakes": [{ "at": 1.75, "amp": 18 }],      // impact shakes (seconds into the scene)
   "headline": { "text": "BLOCKADE GOES\nON LAND", "style": "dark" },
   "caption": "*Nov 7:* the US launched *Task Force Iron Gate.*",
+  "say": "On November seventh, the US launched Task Force Iron Gate.",   // optional spoken line
   "elements": [ /* drawn in order, later = on top */ ]
 }
 ```
@@ -158,6 +160,45 @@ with `"fontDirs": ["fonts"]` and theme overrides:
 transitions, thuds on shakes/headlines, stamp hits, paper rustle on captions. `"music": "bed.mp3"` mixes a
 track underneath (fades out at the end). No audio unless you ask for it.
 
+## Narration (TTS voiceover)
+
+Set `"voice"` on the story (or pass `--voice`) and every scene speaks: its `say` line if it has one, otherwise
+its caption with the `*` marks removed. `"say": false` keeps a scene silent.
+
+| voice | provider |
+|---|---|
+| `"gemini:Charon"`, `"gemini"` | Gemini TTS, **any model**, any language (Bangla included). Needs `GEMINI_API_KEY` |
+| `"deepgram"`, `"deepgram:aura-2-thalia-en"` | Deepgram Aura-2, English. Needs `DEEPGRAM_API_KEY` |
+| `"kokoro"`, `"kokoro:af_heart"` | local, offline Kokoro-82M (English). `npm i kokoro-js` once |
+| `"edge"`, `"edge:bn-BD-NabanitaNeural"` | Edge voices, every language, no key |
+| `"auto"` | Gemini if a key is set, else Deepgram, else Kokoro (if installed), else Edge |
+
+Object form, all fields optional:
+
+```json
+"voice": {
+  "provider": "gemini", "voice": "Kore",
+  "model": "gemini-2.5-pro-preview-tts",       // or a fallback chain "model-a, model-b"
+  "style": "Read like a calm, serious news anchor",   // Gemini style prompt
+  "speed": 1.05,                                // 1 = normal
+  "fit": "extend",                              // extend (default) | squeeze | none
+  "lead": 0.25, "tail": 0.4,                    // seconds of air before/after each line
+  "fallback": true                              // on any provider error, use Edge in the same language
+}
+```
+
+- **Timing.** A line longer than its scene stretches that scene (`fit: "extend"`); `"squeeze"` first speeds the
+  clip up to `maxTempo` (1.2); `"none"` keeps your timing and lets the voice run over. Captions re-time so
+  their words reveal at the pace of the voice. `"sayAt"` on a scene overrides `lead`.
+- **Per scene.** `"voice"` on a scene overrides the story voice (a second speaker, a different language).
+- **Keys.** `GEMINI_API_KEY=k1,k2,k3` (also `GEMINI_API_KEYS`, `GEMINI_API_KEY_1`.._32, `GOOGLE_API_KEY`), same for
+  Deepgram. On a quota error the next key is tried; Gemini then moves to the next model in the chain (each model
+  has its own quota). Keys can live in `.env` (see `.env.example`).
+- **Languages.** A provider that can't speak the story's `lang` (Deepgram/Kokoro and Bangla) or has no key hands
+  off to Edge *in that language*. Clips are cached in `output/.tts-cache`, so re-renders cost nothing.
+- **Mix.** Music ducks under the voice automatically; SFX drop to 0.45. Override with `audio.voiceVolume`,
+  `audio.musicVolume`, `audio.sfxVolume`.
+
 ## CLI
 
 ```
@@ -166,6 +207,10 @@ vox stills story.json            # contact sheet PNG (review the look in seconds
 vox stills story.json --scene 3 --times 0.1,0.4,0.8   # one scene's animation
 vox frame  story.json 12.5       # one full-res frame
 vox render story.json [--theme T] [--quality high] [--resolution 4k] [--sfx] [-o out.mp4]
+vox render story.json --voice gemini:Charon [--tts-model gemini-2.5-pro-preview-tts]   # narrated
+vox narrate story.json --voice kokoro   # voice track only (WAV) + per-scene timing, to listen first
+vox voices bn                           # providers, key counts (masked), voices for a language
+vox tts-models                          # Gemini TTS models your key can use
 vox gallery story.json --scenes 1,3        # the same shots in all 9 themes, side by side
 ```
 

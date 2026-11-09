@@ -15,6 +15,8 @@ const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio
   console.log('prompts:', prompts.join(', '));
   const call = async (name, args) => { const r = await client.callTool({ name, arguments: args }); if (r.isError) throw new Error(name + ': ' + r.content[0].text); return r; };
 
+  const ttsInfo = await call('vox_tts_status', { lang: 'bn' });
+  console.log('tts:', ttsInfo.content[0].text.split('\n').slice(0, 2).join(' / '));
   const guide = await call('vox_get_guide', {});
   console.log('guide chars:', guide.content[0].text.length);
   console.log((await call('vox_validate_story', { story_path: 'stories/_template.json' })).content[0].text.split('\n')[0]);

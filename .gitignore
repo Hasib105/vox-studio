@@ -9,3 +9,8 @@ output/
 .claude/skills/vox-explainer
 skills-lock.json
 .claude/settings.local.json
+
+# API keys (never commit)
+.env
+.env.*
+!.env.example

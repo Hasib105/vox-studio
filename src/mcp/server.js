@@ -13,6 +13,7 @@ const { loadStory } = require('../engine/loader');
 const { catalog } = require('../components');
 const { themeList } = require('../engine/themes');
 const { countryNames } = require('../engine/geo');
+const tts = require('../engine/tts');
 
 const ROOT = path.join(__dirname, '..', '..');
 const WORKSPACE = path.resolve(process.env.VOX_WORKSPACE || process.cwd());
@@ -123,7 +124,9 @@ server.registerTool('vox_render_video', {
     quality: z.enum(['draft', 'standard', 'high', 'max']).optional().describe('draft = fast half-size preview; high (default) = drawn at 1.5x and downscaled; max = 2x, near-lossless'),
     resolution: z.enum(['720p', '1080p', '1440p', '4k']).optional().describe('Output size relative to the story format (4k on a 16:9 story = 3840x2160)'),
     sfx: z.boolean().optional().describe('Add procedural paper-foley sound effects (default: story.audio.sfx or false)'),
-    music: z.string().optional().describe('Path to a music file to mix underneath'),
+    music: z.string().optional().describe('Path to a music file to mix underneath (ducked under narration)'),
+    voice: z.union([z.string(), z.boolean(), z.record(z.string(), z.any())]).optional().describe('Narration: "gemini:Charon", "gemini", "deepgram", "kokoro" (local), "edge:bn-BD-NabanitaNeural", "auto", or false for none. Default: story.voice. Each scene speaks its "say" text, else its caption.'),
+    tts_model: z.string().optional().describe('Gemini TTS model(s), comma-separated fallback chain, e.g. "gemini-2.5-pro-preview-tts". See vox_tts_status.'),
     workers: z.number().optional().describe('Parallel render workers (default: CPU count - 1, max 6)'),
   },
 }, async (a) => {
@@ -132,7 +135,7 @@ server.registerTool('vox_render_video', {
     await loadStory(input, { baseDir: WORKSPACE }); // validate up front
     const id = `job${++jobSeq}`, job = { id, status: 'running', progress: [], started: Date.now() };
     jobs.set(id, job);
-    renderVideo(input, { out: a.output_path && path.resolve(WORKSPACE, a.output_path), outDir: OUT, theme: a.theme, quality: a.quality, resolution: a.resolution, sfx: a.sfx, music: a.music && path.resolve(WORKSPACE, a.music), workers: a.workers, baseDir: WORKSPACE, log: m => { job.progress.push(m); log(m); } })
+    renderVideo(input, { out: a.output_path && path.resolve(WORKSPACE, a.output_path), outDir: OUT, theme: a.theme, quality: a.quality, resolution: a.resolution, sfx: a.sfx, music: a.music && path.resolve(WORKSPACE, a.music), voice: a.voice, ttsModel: a.tts_model, workers: a.workers, baseDir: WORKSPACE, log: m => { job.progress.push(m); log(m); } })
       .then(r => { job.status = 'done'; job.result = r; })
       .catch(e => { job.status = 'error'; job.error = e.message; log(e.stack); });
     return text(`Started ${id}. Poll vox_render_status with job_id "${id}".`);
@@ -147,9 +150,27 @@ server.registerTool('vox_render_status', {
   const job = jobs.get(job_id); if (!job) return fail(`unknown job ${job_id}`);
   const until = Date.now() + Math.min(55, wait_seconds ?? 30) * 1000;
   while (job.status === 'running' && Date.now() < until) await new Promise(r => setTimeout(r, 500));
-  if (job.status === 'done') return text(`DONE: ${job.result.out}\n${job.result.duration.toFixed(1)}s video, ${job.result.size.join('x')}, rendered in ${job.result.renderSeconds}s.`);
+  if (job.status === 'done') {
+    const n = job.result.narration, notes = job.progress.filter(m => /scene .*->|voice:|failed/.test(m));
+    const who = n && [...new Set(n.map(c => `${c.provider}:${c.voice}${c.model ? ` (${c.model})` : ''}${c.fellBack ? ' [fallback]' : ''}`))].join(', ');
+    return text(`DONE: ${job.result.out}\n${job.result.duration.toFixed(1)}s video, ${job.result.size.join('x')}, rendered in ${job.result.renderSeconds}s.` + (n ? `\nNarration: ${n.length} line(s) by ${who}` : '') + (notes.length ? '\n' + notes.join('\n') : ''));
+  }
   if (job.status === 'error') return fail(job.error);
   return text(`RUNNING (${((Date.now() - job.started) / 1000).toFixed(0)}s): ${job.progress.slice(-1)[0] || 'starting'}`);
+});
+
+server.registerTool('vox_tts_status', {
+  title: 'Narration / TTS status',
+  description: 'Which TTS providers are ready (Gemini, Deepgram, local Kokoro, Edge), how many API keys each has (masked), the Gemini model chain, and voices per language. Set list_models to ask Gemini which TTS models your key can use.',
+  inputSchema: { lang: z.string().optional().describe('Show voices for one language, e.g. bn'), list_models: z.boolean().optional() },
+}, async ({ lang, list_models }) => {
+  try {
+    const langs = lang ? [tts.resolveLanguage(lang).lang] : tts.LANGUAGES;
+    let out = tts.ttsStatus() + '\n\nlang: edge | deepgram | kokoro\n' + langs.map(l => `${l.code}: ${l.edge} | ${l.deepgram || '-'} | ${l.kokoro || '-'}`).join('\n');
+    out += `\n\nGemini voices (any language): ${tts.GEMINI_VOICES.join(', ')}`;
+    if (list_models) out += '\n\nGemini TTS models for your key:\n' + (await tts.listGeminiModels()).map(m => '- ' + m.name).join('\n');
+    return text(out);
+  } catch (e) { return fail(e); }
 });
 
 server.registerTool('vox_save_story', {
@@ -194,6 +215,7 @@ Workflow:
 1. Call vox_get_guide and read it fully.
 2. Verify the facts (search the web if you can). Keep sources; put them in "sources" and a small on-screen source label.
 3. Propose a beat map (hook <3s, 4-6s shots, 6-8 shots) with headline, caption and visual idea per shot. Wait for my OK.
+   If I want a voiceover, set "voice" (e.g. "gemini:Charon") and give each scene a spoken "say" line (else its caption is read).
 4. Write the story JSON. Run vox_validate_story, then vox_preview and LOOK at the image. Fix overlaps, clipped text, empty frames. Inspect key scenes with scene+times.
 5. Render with vox_render_video, poll vox_render_status, and give me the MP4 path.` } }],
 }));

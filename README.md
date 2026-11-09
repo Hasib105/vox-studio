@@ -57,7 +57,11 @@ full 1080p / 4K supersampled quality.
   9:16, 16:9, 1:1 and 4:5, up to 4K. Renders in parallel across CPU cores.
 - **Sound (optional).** Whooshes, pops, thuds, stamps and paper rustle synthesized from the timeline, plus your
   own music bed.
-- **MCP server.** 11 tools + a guided prompt: the AI reads the guide, writes the story, *looks at the preview
+- **Narration (optional).** TTS voiceover from each scene's `say` line or caption: **Gemini** (any TTS model,
+  any language incl. Bangla), **Deepgram** Aura-2, **local Kokoro** (offline) or free **Edge** voices. Several API
+  keys per provider rotate on quota errors, Gemini falls back across models, scenes stretch to fit the voice,
+  captions reveal in sync and music ducks underneath. Clips are cached.
+- **MCP server.** 12 tools + a guided prompt: the AI reads the guide, writes the story, *looks at the preview
   images*, fixes problems, and renders.
 
 ## Quick start
@@ -73,7 +77,23 @@ node src/cli.js render stories/iron-gate.bn.json --sfx  # Bangla version with so
 node src/cli.js render stories/coffee.scrapbook.json --theme noir   # any story, any style
 node src/cli.js render stories/seasons.swiss.landscape.json --resolution 4k
 node src/cli.js new my-video                            # scaffold stories/my-video.json
+node src/cli.js render stories/iron-gate.bn.json --voice gemini:Charon   # Bangla voiceover
 ```
+
+### Narration keys (optional)
+
+Copy `.env.example` to `.env` (git-ignored) and add keys. Several keys per provider are comma-separated and
+rotate automatically when one hits its quota:
+
+```bash
+GEMINI_API_KEY=key_one,key_two,key_three
+GEMINI_TTS_MODEL=gemini-3.1-flash-tts-preview,gemini-2.5-flash-preview-tts   # any TTS model, fallback chain
+DEEPGRAM_API_KEY=dg_one,dg_two
+```
+
+No keys? `--voice kokoro` runs offline after `npm i kokoro-js` (English), and Gemini/Deepgram requests fall back to
+free Edge voices in the story's language. `node src/cli.js voices` shows what is configured;
+`node src/cli.js tts-models` lists the Gemini TTS models your key can use. Full options: `docs/STORY_FORMAT.md`.
 
 Requires Node.js 20.19+ (Windows, macOS, Linux).
 
@@ -147,6 +167,9 @@ Every component and prop: `node src/cli.js components`.
 | `vox stills <story> [--scene N --times 0.1,0.5,0.9] [--full]` | contact sheet PNG for review |
 | `vox frame <story> <seconds>` | one full-resolution frame |
 | `vox render <story> [-o out.mp4] [--theme T] [--quality draft|standard|high|max] [--resolution 1440p|4k] [--sfx] [--music bed.mp3]` | render the MP4 |
+| `vox render <story> --voice gemini:Kore [--tts-model M] [--no-voice]` | render with narration (`gemini`, `deepgram`, `kokoro`, `edge`, `auto`) |
+| `vox narrate <story> [--voice V]` | voice track only (WAV) with per-scene timing |
+| `vox voices [lang]` · `vox tts-models` | TTS providers, key status (masked), voices, Gemini models |
 | `vox gallery <story> [--scenes 1,5]` | the same shots in all 9 styles, side by side |
 | `vox new <name> [--lang bn]` | new story from the template |
 | `vox components [name]` · `vox themes` · `vox countries` | reference |
@@ -158,7 +181,8 @@ Every component and prop: `node src/cli.js components`.
 ```
 src/engine/     core (easing, keyframes), paper (torn edges, halftone, grain), text (fonts, captions),
                 geo (Natural Earth maps), scene (renderer, camera, transitions), audio (procedural SFX),
-                render (parallel workers + ffmpeg), loader (validation)
+                tts (Gemini/Deepgram/Kokoro/Edge narration, key rotation), render (parallel workers + ffmpeg),
+                loader (validation)
 src/components/ basic.js, objects.js, props.js, map.js   ← add your own component here
 src/engine/style.js, backdrop.js, themes.js       ← the 9 visual styles
 src/mcp/        MCP server

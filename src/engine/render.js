@@ -7,27 +7,11 @@ const { spawn } = require('child_process');
 const { once } = require('events');
 const { Worker } = require('worker_threads');
 const { createCanvas } = require('@napi-rs/canvas');
-// Bundled ffmpeg (ffmpeg-static) or, if its binary was not downloaded (install scripts blocked), ffmpeg on PATH.
-const FFMPEG = (() => {
-  if (process.env.FFMPEG_PATH) return process.env.FFMPEG_PATH;
-  try { const p = require('ffmpeg-static'); if (p && fs.existsSync(p)) return p; } catch (e) { /* fall through */ }
-  return 'ffmpeg';
-})();
-function ffmpegMissing(e) {
-  if (e && e.code === 'ENOENT') throw new Error('ffmpeg not found. Run "npm rebuild ffmpeg-static" (or "npm install-scripts approve ffmpeg-static && npm rebuild"), install ffmpeg on your PATH, or set FFMPEG_PATH.');
-  throw e;
-}
+const { FFMPEG, ffmpegMissing, run } = require('./ffmpeg');
 const { loadStory } = require('./loader');
 const { Renderer } = require('./scene');
 const { renderSfx } = require('./audio');
-
-function run(args, quiet = true) {
-  return new Promise((res, rej) => {
-    const p = spawn(FFMPEG, ['-y', '-loglevel', quiet ? 'error' : 'info', ...args], { stdio: ['ignore', 'ignore', 'pipe'] });
-    let err = ''; p.stderr.on('data', d => { err += d; }); p.on('error', e => { try { ffmpegMissing(e); } catch (x) { rej(x); } });
-    p.on('close', c => (c === 0 ? res() : rej(new Error('ffmpeg failed: ' + err.slice(-800)))));
-  });
-}
+const { narrate, wantsVoice, buildVoiceTrack } = require('./tts');
 
 // Quality presets: ss = supersampling (draw bigger, downscale with lanczos), then x264 settings.
 const QUALITY = {
@@ -72,19 +56,36 @@ async function encodeRange(storyInput, a, b, out, o = {}, onFrame) {
   if (code !== 0) throw new Error('ffmpeg segment encode failed');
 }
 
+// Narration runs before anything is drawn: a voice line longer than its scene stretches that scene, and captions
+// re-time to the voice, so the frames must be rendered from the narrated story.
+async function prepareNarration(storyInput, opts, log) {
+  if (opts.voice === false || opts.noVoice) return { input: storyInput, baseDir: opts.baseDir, narration: null };
+  const isFile = typeof storyInput === 'string';
+  const raw = isFile ? JSON.parse(fs.readFileSync(storyInput, 'utf8')) : JSON.parse(JSON.stringify(storyInput));
+  if (!wantsVoice(raw, opts)) return { input: storyInput, baseDir: opts.baseDir, narration: null };
+  const baseDir = isFile ? path.dirname(path.resolve(storyInput)) : opts.baseDir;
+  if (isFile && !raw.title) raw.title = path.basename(storyInput, '.json');
+  await loadStory(raw, { baseDir, theme: opts.theme }); // validate before spending any TTS quota
+  const cacheDir = path.resolve(opts.ttsCache || process.env.VOX_TTS_CACHE || path.join(opts.out ? path.dirname(path.resolve(opts.out)) : (opts.outDir || 'output'), '.tts-cache'));
+  const narration = await narrate(raw, { voice: opts.voice, model: opts.ttsModel, cacheDir, log });
+  return narration ? { input: raw, baseDir, narration } : { input: storyInput, baseDir: opts.baseDir, narration: null };
+}
+
 async function renderVideo(storyInput, opts = {}) {
   const t0 = Date.now();
-  const story = await loadStory(storyInput, { baseDir: opts.baseDir, theme: opts.theme });
+  const log = opts.log || (m => process.stdout.write(m + '\n'));
+  const { input, baseDir, narration } = await prepareNarration(storyInput, opts, log);
+  storyInput = input;
+  const story = await loadStory(storyInput, { baseDir, theme: opts.theme });
   const P = plan(story, opts);
   const R = new Renderer(story, { scale: 1 });
   R.cw = P.outW; R.ch = P.outH;
   const total = opts.frames ? Math.min(opts.frames, R.total) : R.total;
-  const enc = { quality: opts.quality, resolution: opts.resolution, scale: opts.scale, baseDir: opts.baseDir, theme: opts.theme };
+  const enc = { quality: opts.quality, resolution: opts.resolution, scale: opts.scale, baseDir, theme: opts.theme };
   const name = slug(story.title);
   const out = path.resolve(opts.out || path.join(opts.outDir || 'output', `${name}.mp4`));
   fs.mkdirSync(path.dirname(out), { recursive: true });
   const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'vox-'));
-  const log = opts.log || (m => process.stdout.write(m + '\n'));
   const nw = Math.max(1, Math.min(opts.workers || Math.max(1, Math.min(6, os.cpus().length - 1)), Math.ceil(total / 60)));
   log(`Rendering "${story.title}" [${story.theme || 'vox-news'}]: ${total} frames (${(total / story.fps).toFixed(1)}s) -> ${P.outW}x${P.outH}, quality ${opts.quality || story.quality || 'high'} (drawn at ${P.ss}x, crf ${P.crf}), ${nw} worker(s)...`);
   const segs = []; const chunk = Math.ceil(total / nw); let done = 0, lastPct = -1;
@@ -109,15 +110,31 @@ async function renderVideo(storyInput, opts = {}) {
   const audio = story.audio || {};
   const wantSfx = opts.sfx ?? audio.sfx ?? false;
   const music = opts.music || (audio.music && path.resolve(story._baseDir, audio.music));
-  if (wantSfx || music) {
-    const args = ['-i', video]; let filter = '', inputs = [];
-    if (wantSfx) { const wav = path.join(tmp, 'sfx.wav'); const n = renderSfx(story, duration, wav); log(`  ${n} sound effects synthesized`); args.push('-i', wav); inputs.push(`[${inputs.length + 1}:a]`); }
+  const voiced = !!(narration && narration.clips.length);
+  if (wantSfx || music || voiced) {
+    const args = ['-i', video], inputs = [], fmt = 'aformat=sample_fmts=fltp:sample_rates=48000:channel_layouts=stereo';
+    let filter = '';
+    const add = file => { args.push('-i', file); return args.filter(a => a === '-i').length - 1; };
+    if (voiced) {
+      const wav = buildVoiceTrack(narration.clips, duration, path.join(tmp, 'voice.wav'));
+      const i = add(wav), vv = audio.voiceVolume ?? 1;
+      filter += `[${i}:a]${fmt},volume=${vv}${music ? ',asplit=2[v][vkey]' : '[v]'};`; inputs.push('[v]');
+      const by = [...new Set(narration.clips.map(c => c.provider + ':' + c.voice + (c.model ? ` (${c.model})` : '')))];
+      log(`  narration: ${narration.clips.length} line(s), ${by.join(', ')}`);
+    }
+    if (wantSfx) {
+      const wav = path.join(tmp, 'sfx.wav');
+      const n = renderSfx(voiced && audio.sfxVolume === undefined ? { ...story, audio: { ...audio, sfxVolume: 0.45 } } : story, duration, wav);
+      log(`  ${n} sound effects synthesized`);
+      const i = add(wav); filter += `[${i}:a]${fmt}[s];`; inputs.push('[s]');
+    }
     if (music) {
       if (!fs.existsSync(music)) throw new Error('music file not found: ' + music);
-      args.push('-i', music); const idx = inputs.length + 1, mv = audio.musicVolume ?? 0.35;
-      filter += `[${idx}:a]volume=${mv},afade=t=out:st=${Math.max(0, duration - 1.5)}:d=1.5[m];`; inputs.push('[m]');
+      const i = add(music), mv = audio.musicVolume ?? (voiced ? 0.28 : 0.35);
+      filter += `[${i}:a]${fmt},volume=${mv},afade=t=out:st=${Math.max(0, duration - 1.5)}:d=1.5${voiced ? '[m0];[m0][vkey]sidechaincompress=threshold=0.02:ratio=6:attack=20:release=400[m]' : '[m]'};`;
+      inputs.push('[m]');
     }
-    filter += inputs.length > 1 ? `${inputs.join('')}amix=inputs=${inputs.length}:normalize=0:duration=first[a]` : `${inputs[0]}anull[a]`;
+    filter += inputs.length > 1 ? `${inputs.join('')}amix=inputs=${inputs.length}:normalize=0:duration=first,alimiter=limit=0.89[a]` : `${inputs[0]}anull[a]`;
     await run([...args, '-filter_complex', filter, '-map', '0:v', '-map', '[a]', '-c:v', 'copy', '-c:a', 'aac', '-b:a', '192k', '-t', String(duration), '-movflags', '+faststart', out]);
   } else {
     await run(['-i', video, '-c', 'copy', '-movflags', '+faststart', out]);
@@ -125,7 +142,7 @@ async function renderVideo(storyInput, opts = {}) {
   fs.rmSync(tmp, { recursive: true, force: true });
   const secs = ((Date.now() - t0) / 1000).toFixed(0);
   log(`Done: ${out}  (${duration.toFixed(1)}s video, rendered in ${secs}s)`);
-  return { out, duration, frames: total, size: [R.cw, R.ch], renderSeconds: +secs };
+  return { out, duration, frames: total, size: [R.cw, R.ch], renderSeconds: +secs, narration: voiced ? narration.clips.map(({ file, ...c }) => c) : undefined };
 }
 
 // Contact sheet: one frame per scene (at fraction `at` of the scene), plus optional full-size PNGs.

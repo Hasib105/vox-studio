@@ -26,7 +26,7 @@ Speak the user's language. No em dashes in on-screen copy.
    - Inspect animation: `node src/cli.js stills <file> --scene 3 --times 0.1,0.4,0.8`
    - Close look: `node src/cli.js frame <file> 12.5 -o output/f.png`
    Fix clipped labels (keep text inside x 90-990), overlaps, text over busy art, dead frames, then re-check.
-6. **Render.** `node src/cli.js render stories/<slug>.json [--sfx] [-o output/<slug>.mp4]`
+6. **Render.** `node src/cli.js render stories/<slug>.json [--sfx] [--voice gemini:Charon] [-o output/<slug>.mp4]`
    (~1-2 min for 40s at 1080x1920 using parallel workers; `--scale 0.5` for a fast draft).
    Verify with frames from the MP4 (`node_modules/ffmpeg-static/ffmpeg -i out.mp4 -vf "select=..."`).
 7. **Deliver** the MP4 path, the caption script, and sources.
@@ -50,3 +50,9 @@ labels are often wider, so nudge `dx` on labels near the frame edge.
 - `flipX` keyframes passing through 0 make the element vanish for a frame; that reads as a paper flip.
 - Keep captions 8-16 words; they reveal word by word at ~10 words/s (8 for Bangla).
 - Audio is off unless the story sets `"audio": {"sfx": true}` or you pass `--sfx`.
+- Narration is off unless the story sets `"voice"` or you pass `--voice`. Only add it when the user asks for a
+  voiceover. Write a natural spoken `say` line per scene (numbers and dates as spoken words; the caption stays
+  the on-screen text). Check `node src/cli.js voices` for configured keys; listen first with
+  `node src/cli.js narrate <story>`. Gemini reads Bangla well; Deepgram/Kokoro are English-only and hand Bangla
+  to Edge. Scenes stretch to fit the voice; `narrate` prints which ones.
+- Keys live in `.env` (git-ignored). Never print, commit or echo API keys.
