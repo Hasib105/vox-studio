@@ -1,4 +1,5 @@
 # vox-studio
+[![M8ven Score](https://m8ven.ai/badge/mcp/hasib105-vox-studio-1984fn?v=f19ad6c8aa92a31a74aed0dbe7af16ad)](https://m8ven.ai/mcp/hasib105-vox-studio-1984fn?s=readme)
 
 **Vox-style paper-collage explainer videos from a JSON file. 100% local. Comes with an MCP server so Claude (or any MCP client) can write, preview and render them for you.**
 
